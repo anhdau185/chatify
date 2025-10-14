@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"],
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@components/*": ["src/modules/shared/components/*"]
     }
   },
   "include": ["src/*", "src/modules/App.tsx"]

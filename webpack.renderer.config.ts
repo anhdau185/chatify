@@ -21,6 +21,7 @@ export const rendererConfig: Configuration = {
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@components': path.resolve(__dirname, 'src/modules/shared/components'),
     },
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.css'],
   },
