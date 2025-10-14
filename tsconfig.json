@@ -8,11 +8,11 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "outDir": "dist",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]
     }
