@@ -5,7 +5,9 @@ const config: Config = {
   tabWidth: 2,
   semi: true,
   singleQuote: true,
-  plugins: ['prettier-plugin-tailwindcss'],
+  printWidth: 120,
+  arrowParens: 'avoid',
+  plugins: ['prettier-plugin-tailwindcss'], // auto-rearrange class names
 };
 
 export default config;
