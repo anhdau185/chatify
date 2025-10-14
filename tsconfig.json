@@ -3,6 +3,7 @@
     "target": "ES6",
     "allowJs": true,
     "module": "commonjs",
+    "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
@@ -16,5 +17,5 @@
       "*": ["node_modules/*"]
     }
   },
-  "include": ["src/*"]
+  "include": ["src/*", "src/modules/App.tsx"]
 }
