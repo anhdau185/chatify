@@ -16,7 +16,8 @@
     "paths": {
       "*": ["node_modules/*"],
       "@/*": ["src/*"],
-      "@components/*": ["src/modules/shared/components/*"]
+      "@components/*": ["src/modules/shared/components/*"],
+      "@shared/*": ["src/modules/shared/*"]
     }
   },
   "include": ["src/*", "src/modules/App.tsx"],

@@ -4,7 +4,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router';
 
 import { ChatScreen } from '@/modules/chat';
 import { LoginScreen } from '@/modules/login';
-import { useAuthStore } from '@/modules/shared/store/authStore';
+import { useAuthStore } from '@shared/store/authStore';
 
 const queryClient = new QueryClient();
 
