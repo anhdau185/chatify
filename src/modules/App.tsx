@@ -5,9 +5,15 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router';
 import { ChatScreen } from '@/modules/chat';
 import { LoginScreen } from '@/modules/login';
 import { Toaster as GlobalToaster } from '@components/ui/sonner';
-import { useAuthStore } from '@shared/store/authStore';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,25 +26,12 @@ function RootLayout({ children }: { children: ReactNode }) {
 
 // this is where all routes are declared
 function AppRoutes() {
-  const { user } = useAuthStore();
-  const isAuthenticated = user != null;
-
   return (
     <HashRouter>
       <Routes>
-        <Route
-          path="/"
-          index
-          element={
-            isAuthenticated ? <Navigate to="/chat" replace /> : <LoginScreen />
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            isAuthenticated ? <ChatScreen /> : <Navigate to="/" replace />
-          }
-        />
+        <Route path="/" index element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginScreen />} />
+        <Route path="/chat" element={<ChatScreen />} />
       </Routes>
     </HashRouter>
   );

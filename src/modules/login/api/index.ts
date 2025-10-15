@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { LoginCredentials, LoginError, LoginResponse } from '../types';
+import { GeneralApiError } from '@shared/types';
+import { LoginCredentials, LoginResponse } from '../types';
 
 export const useLogin = ({
   onSuccess,
@@ -15,10 +16,12 @@ export const useLogin = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
+        credentials: 'include',
       });
 
       if (!res.ok) {
-        const { error: errorMsg } = await (res.json() as Promise<LoginError>);
+        const { error: errorMsg } =
+          await (res.json() as Promise<GeneralApiError>);
         throw new Error(errorMsg || 'Something went wrong on our end :(');
       }
 

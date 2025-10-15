@@ -8,8 +8,4 @@ interface LoginResponse {
   access: string;
 }
 
-interface LoginError {
-  error: string;
-}
-
-export { LoginCredentials, LoginResponse, LoginError };
+export { LoginCredentials, LoginResponse };

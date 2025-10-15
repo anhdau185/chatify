@@ -1,8 +1,8 @@
 import { Loader2, Lock, User2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
-import { Alert, AlertDescription } from '@components/ui/alert';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
@@ -11,12 +11,13 @@ import { useLogin } from '../api';
 const MIN_LENGTH = 6;
 
 export default function LoginForm() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const { mutate: login, isPending: isLoggingIn } = useLogin({
-    onSuccess(/* data */) {
-      // TODO: navigate to "/chat" upon successful login
+    onSuccess() {
+      navigate('/chat', { replace: true });
     },
     onError({ message }) {
       toast.error(message);
@@ -86,12 +87,6 @@ export default function LoginForm() {
           />
         </div>
       </div>
-
-      {false && (
-        <Alert variant="destructive" className="py-2">
-          <AlertDescription className="text-sm">{'error_msg'}</AlertDescription>
-        </Alert>
-      )}
 
       <Button
         type="submit"
