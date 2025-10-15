@@ -1,4 +1,5 @@
-import { Lock, User2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { Loader2, Lock, User2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import { Alert, AlertDescription } from '@components/ui/alert';
@@ -6,13 +7,38 @@ import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
 
+interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  access: string;
+}
+
 export default function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const { mutate: login, isPending: isLoggingIn } = useMutation({
+    mutationFn: async (credentials: LoginCredentials) => {
+      const res = await fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+
+      return res.json() as Promise<LoginResponse>;
+    },
+    onSuccess(/* data */) {
+      // TODO: navigate to "/chat" upon successful login
+    },
+  });
+
   const handleSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
-    // handle form logic here
+    login({ username, password });
   };
 
   return (
@@ -29,7 +55,7 @@ export default function LoginForm() {
             type="text"
             placeholder="you@example.com"
             className="pl-10"
-            disabled={false}
+            disabled={isLoggingIn}
             value={username}
             onChange={e => setUsername(e.target.value)}
           />
@@ -48,7 +74,7 @@ export default function LoginForm() {
             type="password"
             placeholder="••••••••"
             className="pl-10"
-            disabled={false}
+            disabled={isLoggingIn}
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
@@ -61,16 +87,19 @@ export default function LoginForm() {
         </Alert>
       )}
 
-      <Button type="submit" className="w-full cursor-pointer" disabled={false}>
-        {/* {loading ? (
+      <Button
+        type="submit"
+        className="w-full cursor-pointer"
+        disabled={isLoggingIn}
+      >
+        {isLoggingIn ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Signing in...
           </>
         ) : (
           'Sign in'
-        )} */}
-        Sign in
+        )}
       </Button>
     </form>
   );

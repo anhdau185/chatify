@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router';
+
+import { LoginScreen } from '@/modules/login';
+import { useAuthStore } from '@/modules/shared/store/authStore';
 import ChatScreen from './chat/components';
-import LoginScreen from './login/components';
-import { useAuthStore } from './shared/store/authStore';
 
 const queryClient = new QueryClient();
 

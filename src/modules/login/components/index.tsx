@@ -22,7 +22,7 @@ export default function LoginScreen() {
             Welcome back
           </CardTitle>
           <CardDescription className="text-center">
-            Sign in to continue to your account
+            Sign in to continue to Chatify
           </CardDescription>
         </CardHeader>
         <CardContent>
