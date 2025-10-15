@@ -2,8 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router';
 
+import { LoginScreen } from '@/modules/auth';
 import { ChatScreen } from '@/modules/chat';
-import { LoginScreen } from '@/modules/login';
 import { Toaster as GlobalToaster } from '@components/ui/sonner';
 
 const queryClient = new QueryClient({
