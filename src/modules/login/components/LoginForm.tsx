@@ -1,48 +1,54 @@
-import { useMutation } from '@tanstack/react-query';
 import { Loader2, Lock, User2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Alert, AlertDescription } from '@components/ui/alert';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
+import { useLogin } from '../api';
 
-interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
-interface LoginResponse {
-  success: boolean;
-  access: string;
-}
+const MIN_LENGTH = 6;
 
 export default function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const { mutate: login, isPending: isLoggingIn } = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      const res = await fetch('http://localhost:8080/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-
-      return res.json() as Promise<LoginResponse>;
-    },
+  const { mutate: login, isPending: isLoggingIn } = useLogin({
     onSuccess(/* data */) {
       // TODO: navigate to "/chat" upon successful login
+    },
+    onError({ message }) {
+      toast.error(message);
     },
   });
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
+
+    if (!username || !password) {
+      toast.error('Username and password are required');
+      return;
+    }
+
+    const usernameTooShort = username.trim().length < MIN_LENGTH;
+    if (usernameTooShort) {
+      toast.error(`Username must be at least ${MIN_LENGTH} characters long`);
+      return;
+    }
+
+    const passwordTooShort = password.length < MIN_LENGTH;
+    if (passwordTooShort) {
+      toast.error(`Password must be at least ${MIN_LENGTH} characters long`);
+      return;
+    }
+
+    // validation is ok, now proceed to call login API
     login({ username, password });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form noValidate onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium">
           Username
