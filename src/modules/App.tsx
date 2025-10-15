@@ -4,13 +4,17 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router';
 
 import { ChatScreen } from '@/modules/chat';
 import { LoginScreen } from '@/modules/login';
+import { Toaster as GlobalToaster } from '@components/ui/sonner';
 import { useAuthStore } from '@shared/store/authStore';
 
 const queryClient = new QueryClient();
 
-function Providers({ children }: { children: ReactNode }) {
+function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <GlobalToaster position="top-center" />
+    </>
   );
 }
 
@@ -41,8 +45,8 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <Providers>
+    <RootLayout>
       <AppRoutes />
-    </Providers>
+    </RootLayout>
   );
 }
