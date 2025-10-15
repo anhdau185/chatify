@@ -18,5 +18,8 @@
       "typescript": {}
     },
     "import/ignore": ["node_modules"]
+  },
+  "rules": {
+    "no-console": "warn"
   }
 }
