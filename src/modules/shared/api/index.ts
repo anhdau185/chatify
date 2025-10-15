@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { AuthResponse, GeneralApiError } from '../types';
 
@@ -26,20 +26,20 @@ export const useAuthentication = () => {
   };
 };
 
-// export const useLogout = () =>
-//   useQuery({
-//     queryKey: ['auth/logout'],
-//     queryFn: async () => {
-//       const res = await fetch('http://localhost:8080/auth/logout', {
-//         credentials: 'include',
-//       });
+export const useLogout = ({ onSettled }: { onSettled: () => void }) =>
+  useMutation({
+    mutationFn: async () => {
+      const res = await fetch('http://localhost:8080/auth/logout', {
+        credentials: 'include',
+      });
 
-//       if (!res.ok) {
-//         const { error: errorMsg } =
-//           await (res.json() as Promise<GeneralApiError>);
-//         throw new Error(errorMsg || 'Something went wrong on our end :(');
-//       }
+      if (!res.ok) {
+        const { error: errorMsg } =
+          await (res.json() as Promise<GeneralApiError>);
+        throw new Error(errorMsg || 'Something went wrong on our end :(');
+      }
 
-//       return res.json() as Promise<AuthResponse>;
-//     },
-//   });
+      return res.json() as Promise<AuthResponse>;
+    },
+    onSettled,
+  });
