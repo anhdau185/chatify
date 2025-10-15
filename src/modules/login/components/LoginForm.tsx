@@ -31,7 +31,7 @@ export default function LoginForm() {
       return;
     }
 
-    const usernameTooShort = username.trim().length < MIN_LENGTH;
+    const usernameTooShort = username.length < MIN_LENGTH;
     if (usernameTooShort) {
       toast.error(`Username must be at least ${MIN_LENGTH} characters long`);
       return;
@@ -63,7 +63,7 @@ export default function LoginForm() {
             className="pl-10"
             disabled={isLoggingIn}
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value.trim())}
           />
         </div>
       </div>

@@ -18,6 +18,7 @@ function RootLayout({ children }: { children: ReactNode }) {
   );
 }
 
+// this is where all routes are declared
 function AppRoutes() {
   const { user } = useAuthStore();
   const isAuthenticated = user != null;
