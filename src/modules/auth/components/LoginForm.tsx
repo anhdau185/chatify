@@ -17,7 +17,10 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
 
   const { mutate: login, isPending: isLoggingIn } = useLogin({
-    onSuccess() {
+    onSuccess({ authenticatedUser }) {
+      toast.success(
+        `Successfully logged you in. Welcome back, ${authenticatedUser.name}!`,
+      );
       navigate('/chat', { replace: true });
     },
     onError({ message }) {
