@@ -8,7 +8,8 @@ import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
 import { useLogin } from '../api';
 
-const MIN_LENGTH = 6;
+const MIN_USERNAME_LENGTH = 6;
+const MIN_PASSWORD_LENGTH = 6;
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -32,15 +33,19 @@ export default function LoginForm() {
       return;
     }
 
-    const usernameTooShort = username.length < MIN_LENGTH;
+    const usernameTooShort = username.length < MIN_USERNAME_LENGTH;
     if (usernameTooShort) {
-      toast.error(`Username must be at least ${MIN_LENGTH} characters long`);
+      toast.error(
+        `Username must be at least ${MIN_USERNAME_LENGTH} characters long`,
+      );
       return;
     }
 
-    const passwordTooShort = password.length < MIN_LENGTH;
+    const passwordTooShort = password.length < MIN_PASSWORD_LENGTH;
     if (passwordTooShort) {
-      toast.error(`Password must be at least ${MIN_LENGTH} characters long`);
+      toast.error(
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      );
       return;
     }
 

@@ -12,33 +12,27 @@ import { Skeleton } from '@components/ui/skeleton';
 import { useAuthentication } from '@shared/api';
 import LoginForm from './LoginForm';
 
-export default function LoginScreen() {
-  const { isFetching, isAuthenticated } = useAuthentication();
-
-  if (isFetching) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-        <Card className="h-full max-w-md border-0 shadow-xl">
-          <div className="flex flex-col space-y-5 px-10 py-4">
-            <Skeleton className="h-[125px] w-[300px] rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[300px]" />
-              <Skeleton className="h-4 w-[240px]" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[300px]" />
-              <Skeleton className="h-4 w-[240px]" />
-            </div>
+function PendingCard() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <Card className="h-full max-w-md border-0 shadow-xl">
+        <div className="flex flex-col space-y-5 px-10 py-4">
+          <Skeleton className="h-[125px] w-[300px] rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[300px]" />
+            <Skeleton className="h-4 w-[240px]" />
           </div>
-        </Card>
-      </div>
-    );
-  }
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[300px]" />
+            <Skeleton className="h-4 w-[240px]" />
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
 
-  if (isAuthenticated) {
-    return <Navigate to="/chat" replace />;
-  }
-
+function LoginCard() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <Card className="w-full max-w-md border-0 shadow-xl">
@@ -59,4 +53,18 @@ export default function LoginScreen() {
       </Card>
     </div>
   );
+}
+
+export default function LoginScreen() {
+  const { isFetching, isAuthenticated } = useAuthentication();
+
+  if (isFetching) {
+    return <PendingCard />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/chat" replace />;
+  }
+
+  return <LoginCard />;
 }
