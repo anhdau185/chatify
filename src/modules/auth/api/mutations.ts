@@ -1,9 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { GeneralApiError } from '@shared/types';
-import { AuthResponse, LoginCredentials, LoginResponse } from '../types';
+import { endpoint } from '@shared/lib/utils';
+import type { GeneralApiError } from '@shared/types';
+import type { AuthResponse, LoginCredentials, LoginResponse } from '../types';
 
-export const useLogin = ({
+const useLogin = ({
   onSuccess,
   onError,
 }: {
@@ -12,7 +13,7 @@ export const useLogin = ({
 }) =>
   useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      const res = await fetch('http://localhost:8080/auth/login', {
+      const res = await fetch(endpoint('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -31,10 +32,10 @@ export const useLogin = ({
     onError,
   });
 
-export const useLogout = ({ onSettled }: { onSettled: () => void }) =>
+const useLogout = ({ onSettled }: { onSettled: () => void }) =>
   useMutation({
     mutationFn: async () => {
-      const res = await fetch('http://localhost:8080/auth/logout', {
+      const res = await fetch(endpoint('/auth/logout'), {
         credentials: 'include',
       });
 
@@ -48,3 +49,5 @@ export const useLogout = ({ onSettled }: { onSettled: () => void }) =>
     },
     onSettled,
   });
+
+export { useLogin, useLogout };

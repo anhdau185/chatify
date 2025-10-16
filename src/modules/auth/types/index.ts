@@ -18,4 +18,4 @@ interface LoginResponse {
   };
 }
 
-export { AuthResponse, LoginCredentials, LoginResponse };
+export type { AuthResponse, LoginCredentials, LoginResponse };

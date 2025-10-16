@@ -1,5 +1,5 @@
 import { Loader2, Lock, User2 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { useState, type FormEventHandler } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 

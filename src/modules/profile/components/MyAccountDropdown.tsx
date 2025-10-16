@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
 import { useLogout } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
@@ -11,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
-import { toast } from 'sonner';
 
 export default function MyAccountDropdown() {
   const navigate = useNavigate();

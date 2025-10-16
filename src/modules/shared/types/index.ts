@@ -2,4 +2,4 @@ interface GeneralApiError {
   error: string;
 }
 
-export { GeneralApiError };
+export type { GeneralApiError };
