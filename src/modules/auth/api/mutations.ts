@@ -1,13 +1,22 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
-import { AuthResponse, GeneralApiError } from '../types';
+import { GeneralApiError } from '@shared/types';
+import { AuthResponse, LoginCredentials, LoginResponse } from '../types';
 
-export const useAuthentication = () => {
-  const query = useQuery({
-    queryKey: ['auth/me'],
-    queryFn: async () => {
-      const res = await fetch('http://localhost:8080/auth/me', {
-        credentials: 'include', // include jwt cookie for checking identity
+export const useLogin = ({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: (data: LoginResponse) => void;
+  onError: (error: Error) => void;
+}) =>
+  useMutation({
+    mutationFn: async (credentials: LoginCredentials) => {
+      const res = await fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+        credentials: 'include',
       });
 
       if (!res.ok) {
@@ -16,15 +25,11 @@ export const useAuthentication = () => {
         throw new Error(errorMsg || 'Something went wrong on our end :(');
       }
 
-      return res.json() as Promise<AuthResponse>;
+      return res.json() as Promise<LoginResponse>;
     },
+    onSuccess,
+    onError,
   });
-
-  return {
-    ...query,
-    isAuthenticated: !query.error && query.data?.success === true,
-  };
-};
 
 export const useLogout = ({ onSettled }: { onSettled: () => void }) =>
   useMutation({

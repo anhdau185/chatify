@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
-import { useLogin } from '../api';
+import { useLogin } from '../api/mutations';
 
 const MIN_USERNAME_LENGTH = 6;
 const MIN_PASSWORD_LENGTH = 6;

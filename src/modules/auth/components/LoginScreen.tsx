@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@components/ui/card';
 import { Skeleton } from '@components/ui/skeleton';
-import { useAuthentication } from '@shared/api';
+import { useAuthentication } from '../api/queries';
 import LoginForm from './LoginForm';
 
 function PendingCard() {

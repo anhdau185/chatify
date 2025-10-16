@@ -1,3 +1,7 @@
+interface AuthResponse {
+  success: boolean;
+}
+
 interface LoginCredentials {
   username: string;
   password: string;
@@ -8,4 +12,4 @@ interface LoginResponse {
   access: string;
 }
 
-export { LoginCredentials, LoginResponse };
+export { AuthResponse, LoginCredentials, LoginResponse };
