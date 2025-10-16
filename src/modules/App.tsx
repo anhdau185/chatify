@@ -11,11 +11,10 @@ import {
 import { LoginScreen } from '@/modules/auth';
 import { ChatScreen } from '@/modules/messaging';
 import { Toaster as GlobalToaster } from '@components/ui/sonner';
+import { inDesktopEnv } from '@shared/lib/utils';
 
-// TODO: check browser or Electron environment in main process
-// then choose between BrowserRouter or HashRouter here
-// eslint-disable-next-line no-constant-condition
-const Router = true ? HashRouter : BrowserRouter;
+// BrowserRouter won't work with Electron apps
+const Router = inDesktopEnv() ? HashRouter : BrowserRouter;
 
 const queryClient = new QueryClient({
   defaultOptions: {
