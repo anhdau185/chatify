@@ -37,7 +37,7 @@ function LoginCard() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <Card className="w-full max-w-md border-0 shadow-xl">
         <CardHeader className="space-y-3">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-black">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
             <Lock className="h-6 w-6 text-white" />
           </div>
           <CardTitle className="text-center text-2xl font-bold">
