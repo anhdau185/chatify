@@ -20,7 +20,9 @@ export default function ChatSidebar() {
             >
               <Sidebar className="text-slate-600" />
             </Button>
-            <h1 className="text-xl font-bold text-slate-800">Chats</h1>
+            <h1 className="bg-gradient-to-r from-purple-500 via-emerald-400 to-cyan-500 bg-clip-text text-xl font-bold text-transparent">
+              Chatify
+            </h1>
           </div>
 
           <MyAccountDropdown />

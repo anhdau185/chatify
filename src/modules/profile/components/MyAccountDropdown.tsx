@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router';
+
+import { useLogout } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import {
@@ -8,8 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 export default function MyAccountDropdown() {
+  const navigate = useNavigate();
+  const { mutate: logout } = useLogout({
+    onSettled() {
+      toast.info('Bye for now. See you soon 👋');
+      setTimeout(() => navigate('/login', { replace: true }));
+    },
+  });
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -36,7 +48,10 @@ export default function MyAccountDropdown() {
         <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+        <DropdownMenuItem
+          onClick={() => logout()}
+          className="cursor-pointer text-red-600 focus:text-red-600"
+        >
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
