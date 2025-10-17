@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
@@ -46,6 +46,7 @@ function useLogin() {
 
 function useLogout() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const removeAuth = useAuthStore(state => state.removeAuth);
 
   return useMutation({
@@ -64,8 +65,16 @@ function useLogout() {
     },
 
     onSettled() {
-      // delete token & user from store after logging out
+      // delete token & user from store after logging out as they are stale
       removeAuth();
+
+      // data of 'auth/me' query (if there's any) is stale at this stage
+      // therefore it must be invalidated to prevent the bug where the side effect of this query re-adds stale auth data back to zustand store
+      // when user is redirected back to login screen
+      queryClient.invalidateQueries({
+        queryKey: ['auth/me'],
+      });
+
       toast.info('Bye for now. See you soon 👋');
 
       // finally, go back to login screen
