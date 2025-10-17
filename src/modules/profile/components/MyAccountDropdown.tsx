@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
-import { useLogout } from '@/modules/auth';
+import { useAuthStore, useLogout } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import {
@@ -16,10 +16,14 @@ import { deferSideEffect } from '@shared/lib/utils';
 
 export default function MyAccountDropdown() {
   const navigate = useNavigate();
+  const removeAuth = useAuthStore(state => state.removeAuth);
+
   const { mutate: logout } = useLogout({
     onSettled() {
+      removeAuth();
       toast.info('Bye for now. See you soon 👋');
 
+      // go back to login screen after logging out
       deferSideEffect(() => navigate('/login', { replace: true }));
     },
   });
