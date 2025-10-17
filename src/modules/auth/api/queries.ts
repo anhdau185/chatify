@@ -25,6 +25,7 @@ function useAuthentication() {
 
       return res.json() as Promise<AuthResponse>;
     },
+    gcTime: 0, // disables caching for this query
   });
 
   // save token & user to store after successful authentication
@@ -39,7 +40,7 @@ function useAuthentication() {
 
   return {
     ...query,
-    isAuthenticated: !query.error && query.data?.success === true,
+    isAuthenticated: query.isSuccess && query.data?.success === true,
   };
 }
 
