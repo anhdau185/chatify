@@ -28,15 +28,18 @@ function useLogin() {
 
       return res.json() as Promise<LoginResponse>;
     },
+
+    onError({ message }) {
+      toast.error(message);
+    },
+
     onSuccess({ access, authenticatedUser }) {
+      // save token & user to store after successful login
       setAuth({ access, authenticatedUser });
       toast.success(`Welcome back, ${authenticatedUser.name}! 🚀`);
 
-      // go to chat screen after login
+      // finally, go to chat screen
       deferSideEffect(() => navigate('/chat', { replace: true }));
-    },
-    onError({ message }) {
-      toast.error(message);
     },
   });
 }
@@ -59,11 +62,13 @@ function useLogout() {
 
       return res.json() as Promise<LogoutResponse>;
     },
+
     onSettled() {
+      // delete token & user from store after logging out
       removeAuth();
       toast.info('Bye for now. See you soon 👋');
 
-      // go back to login screen after logging out
+      // finally, go back to login screen
       deferSideEffect(() => navigate('/login', { replace: true }));
     },
   });

@@ -27,6 +27,7 @@ function useAuthentication() {
     },
   });
 
+  // save token & user to store after successful authentication
   useEffect(() => {
     if (query.isSuccess && !isEmpty(query.data)) {
       setAuth({
