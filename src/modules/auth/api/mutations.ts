@@ -1,17 +1,17 @@
 import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
-import { endpoint } from '@shared/lib/utils';
+import { deferSideEffect, endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
+import { useAuthStore } from '../store';
 import type { LoginCredentials, LoginResponse, LogoutResponse } from '../types';
 
-const useLogin = ({
-  onSuccess,
-  onError,
-}: {
-  onSuccess: (data: LoginResponse) => void;
-  onError: (error: Error) => void;
-}) =>
-  useMutation({
+function useLogin() {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore(state => state.setAuth);
+
+  return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       const res = await fetch(endpoint('/auth/login'), {
         method: 'POST',
@@ -28,12 +28,24 @@ const useLogin = ({
 
       return res.json() as Promise<LoginResponse>;
     },
-    onSuccess,
-    onError,
-  });
+    onSuccess({ access, authenticatedUser }) {
+      setAuth({ access, authenticatedUser });
+      toast.success(`Welcome back, ${authenticatedUser.name}! 🚀`);
 
-const useLogout = ({ onSettled }: { onSettled: () => void }) =>
-  useMutation({
+      // go to chat screen after login
+      deferSideEffect(() => navigate('/chat', { replace: true }));
+    },
+    onError({ message }) {
+      toast.error(message);
+    },
+  });
+}
+
+function useLogout() {
+  const navigate = useNavigate();
+  const removeAuth = useAuthStore(state => state.removeAuth);
+
+  return useMutation({
     mutationFn: async () => {
       const res = await fetch(endpoint('/auth/logout'), {
         credentials: 'include',
@@ -47,7 +59,14 @@ const useLogout = ({ onSettled }: { onSettled: () => void }) =>
 
       return res.json() as Promise<LogoutResponse>;
     },
-    onSettled,
+    onSettled() {
+      removeAuth();
+      toast.info('Bye for now. See you soon 👋');
+
+      // go back to login screen after logging out
+      deferSideEffect(() => navigate('/login', { replace: true }));
+    },
   });
+}
 
 export { useLogin, useLogout };

@@ -1,10 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
+import { isEmpty } from 'lodash-es';
+import { useEffect } from 'react';
 
 import { endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
+import { useAuthStore } from '../store';
 import type { AuthResponse } from '../types';
 
-const useAuthentication = () => {
+function useAuthentication() {
+  const setAuth = useAuthStore(state => state.setAuth);
+
   const query = useQuery({
     queryKey: ['auth/me'],
     queryFn: async () => {
@@ -22,10 +27,19 @@ const useAuthentication = () => {
     },
   });
 
+  useEffect(() => {
+    if (query.isSuccess && !isEmpty(query.data)) {
+      setAuth({
+        access: query.data.access,
+        authenticatedUser: query.data.authenticatedUser,
+      });
+    }
+  }, [query.isSuccess, query.data]);
+
   return {
     ...query,
     isAuthenticated: !query.error && query.data?.success === true,
   };
-};
+}
 
 export { useAuthentication };

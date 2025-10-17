@@ -1,36 +1,19 @@
 import { Loader2, Lock, User2 } from 'lucide-react';
 import { useState, type FormEventHandler } from 'react';
-import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
-import { deferSideEffect } from '@shared/lib/utils';
 import { useLogin } from '../api/mutations';
-import { useAuthStore } from '../store';
 
 const MIN_USERNAME_LENGTH = 6;
 const MIN_PASSWORD_LENGTH = 6;
 
 export default function LoginForm() {
-  const navigate = useNavigate();
-  const setAuth = useAuthStore(state => state.setAuth);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  const { mutate: login, isPending: isLoggingIn } = useLogin({
-    onSuccess({ access, authenticatedUser }) {
-      setAuth({ access, authenticatedUser });
-      toast.success(`Welcome back, ${authenticatedUser.name}! 🚀`);
-
-      // go to chat screen after login
-      deferSideEffect(() => navigate('/chat', { replace: true }));
-    },
-    onError({ message }) {
-      toast.error(message);
-    },
-  });
+  const { mutate: login, isPending: isLoggingIn } = useLogin();
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
