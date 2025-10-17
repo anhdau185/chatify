@@ -12,13 +12,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
+import { deferSideEffect } from '@shared/lib/utils';
 
 export default function MyAccountDropdown() {
   const navigate = useNavigate();
   const { mutate: logout } = useLogout({
     onSettled() {
       toast.info('Bye for now. See you soon 👋');
-      setTimeout(() => navigate('/login', { replace: true }));
+
+      deferSideEffect(() => navigate('/login', { replace: true }));
     },
   });
 

@@ -21,4 +21,6 @@ function endpoint(route: string) {
   return `${API_HOST}${route}`;
 }
 
-export { inDesktopEnv, cn, endpoint };
+const deferSideEffect = setTimeout;
+
+export { inDesktopEnv, cn, endpoint, deferSideEffect };

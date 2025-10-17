@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
+import { deferSideEffect } from '@shared/lib/utils';
 import { useLogin } from '../api/mutations';
 
 const MIN_USERNAME_LENGTH = 6;
@@ -19,7 +20,8 @@ export default function LoginForm() {
   const { mutate: login, isPending: isLoggingIn } = useLogin({
     onSuccess({ authenticatedUser }) {
       toast.success(`Welcome back, ${authenticatedUser.name}! 🚀`);
-      setTimeout(() => navigate('/chat', { replace: true }));
+
+      deferSideEffect(() => navigate('/chat', { replace: true }));
     },
     onError({ message }) {
       toast.error(message);

@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
-import type { AuthResponse, LoginCredentials, LoginResponse } from '../types';
+import type { LoginCredentials, LoginResponse, LogoutResponse } from '../types';
 
 const useLogin = ({
   onSuccess,
@@ -45,7 +45,7 @@ const useLogout = ({ onSettled }: { onSettled: () => void }) =>
         throw new Error(errorMsg || 'Something went wrong on our end :(');
       }
 
-      return res.json() as Promise<AuthResponse>;
+      return res.json() as Promise<LogoutResponse>;
     },
     onSettled,
   });
