@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import type { User } from '../types';
 
-interface AuthState {
+export interface AuthState {
   access: string | null;
   authenticatedUser: User | null;
   setAuth: (auth: { access: string; authenticatedUser: User }) => void;
