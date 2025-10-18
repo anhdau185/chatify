@@ -1,4 +1,5 @@
-import { useLogout } from '@/modules/auth';
+import { useAuthStore, useLogout } from '@/modules/auth';
+import { abbreviate } from '@/modules/shared/lib/utils';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@components/ui/dropdown-menu';
 
 export default function MyAccountDropdown() {
+  const user = useAuthStore(state => state.authenticatedUser);
   const { mutate: logout } = useLogout();
 
   return (
@@ -23,7 +25,7 @@ export default function MyAccountDropdown() {
         >
           <Avatar className="h-10 w-10 cursor-pointer">
             <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 font-semibold text-white">
-              ME
+              {user ? abbreviate(user.name) : 'ME'}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -32,7 +34,9 @@ export default function MyAccountDropdown() {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1.5">
             <p className="text-sm leading-none font-medium">My Account</p>
-            <p className="text-xs leading-none text-slate-500">@username</p>
+            {user && (
+              <p className="text-xs leading-none text-slate-500">{`${user.name} (@${user.username})`}</p>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

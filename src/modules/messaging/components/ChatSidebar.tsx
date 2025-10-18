@@ -4,6 +4,7 @@ import { MyAccountDropdown } from '@/modules/profile';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import { abbreviate } from '@shared/lib/utils';
 import { CONTACTS } from '../mocks';
 
 export default function ChatSidebar() {
@@ -51,10 +52,7 @@ export default function ChatSidebar() {
             <div className="relative">
               <Avatar className="h-12 w-12">
                 <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
-                  {contact.name
-                    .split(' ')
-                    .map(n => n[0])
-                    .join('')}
+                  {abbreviate(contact.name)}
                 </AvatarFallback>
               </Avatar>
               {contact.status === 'online' && (

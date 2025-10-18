@@ -23,4 +23,18 @@ function endpoint(route: string) {
 
 const deferSideEffect = setTimeout;
 
-export { inDesktopEnv, cn, endpoint, deferSideEffect };
+function abbreviate(text: string) {
+  const parts = text.split(' ');
+
+  if (parts.length >= 2) {
+    return parts.map(n => n[0]).join('');
+  }
+
+  if (text.length > 2) {
+    return text.substring(0, 2);
+  }
+
+  return text;
+}
+
+export { inDesktopEnv, cn, endpoint, deferSideEffect, abbreviate };
