@@ -38,6 +38,7 @@ function useAuthentication() {
     }
   }, [query.isSuccess, query.data]);
 
+  // delete token & user (if any) from store upon unsuccessful authentication
   useEffect(() => {
     if (query.isError) removeAuth();
   }, [query.isError]);
