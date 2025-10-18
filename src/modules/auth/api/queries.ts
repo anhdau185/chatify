@@ -8,7 +8,7 @@ import { useAuthStore } from '../store';
 import type { AuthResponse } from '../types';
 
 function useAuthentication() {
-  const setAuth = useAuthStore(state => state.setAuth);
+  const { setAuth, removeAuth } = useAuthStore();
 
   const query = useQuery({
     queryKey: ['auth/me'],
@@ -37,6 +37,10 @@ function useAuthentication() {
       });
     }
   }, [query.isSuccess, query.data]);
+
+  useEffect(() => {
+    if (query.isError) removeAuth();
+  }, [query.isError]);
 
   return {
     ...query,
