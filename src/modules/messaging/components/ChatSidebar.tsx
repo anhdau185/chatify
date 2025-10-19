@@ -14,11 +14,7 @@ export default function ChatSidebar() {
       <div className="border-b border-slate-200 p-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 cursor-pointer"
-            >
+            <Button variant="ghost" size="icon" className="h-8 w-8">
               <Sidebar className="text-slate-600" />
             </Button>
             <h1 className="bg-gradient-to-r from-purple-500 via-emerald-400 to-cyan-500 bg-clip-text text-xl font-bold text-transparent">

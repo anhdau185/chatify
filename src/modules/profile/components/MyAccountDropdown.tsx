@@ -40,12 +40,12 @@ export default function MyAccountDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
+        <DropdownMenuItem>Profile</DropdownMenuItem>
+        <DropdownMenuItem>Settings</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => logout()}
-          className="cursor-pointer text-red-600 focus:text-red-600"
+          className="text-red-600 focus:text-red-600"
         >
           Log out
         </DropdownMenuItem>

@@ -85,7 +85,7 @@ export default function LoginForm() {
 
       <Button
         type="submit"
-        className="w-full cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
         disabled={isLoggingIn}
       >
         {isLoggingIn ? (
