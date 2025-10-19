@@ -10,6 +10,8 @@ import {
 
 import { LoginScreen, useAuthentication } from '@/modules/auth';
 import { ChatScreen } from '@/modules/messaging';
+import NotFoundScreen from '@components/NotFoundScreen';
+import SkeletonScreen from '@components/SkeletonScreen';
 import { Toaster as GlobalToaster } from '@components/ui/sonner';
 import { inDesktopEnv } from '@shared/lib/utils';
 
@@ -29,7 +31,7 @@ function AppInitializer({ children }: { children: ReactNode }) {
   const { isFetching } = useAuthentication();
 
   if (isFetching) {
-    return null; // TODO: <Skeleton />
+    return <SkeletonScreen />;
   }
 
   return <>{children}</>;
@@ -54,6 +56,7 @@ function AppRoutes() {
         <Route path="/" index element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/chat" element={<ChatScreen />} />
+        <Route path="*" element={<NotFoundScreen />} />
       </Routes>
     </Router>
   );
