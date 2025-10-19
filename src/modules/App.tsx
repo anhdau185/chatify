@@ -8,7 +8,7 @@ import {
   Routes,
 } from 'react-router';
 
-import { LoginScreen } from '@/modules/auth';
+import { LoginScreen, useAuthentication } from '@/modules/auth';
 import { ChatScreen } from '@/modules/messaging';
 import { Toaster as GlobalToaster } from '@components/ui/sonner';
 import { inDesktopEnv } from '@shared/lib/utils';
@@ -25,10 +25,22 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppInitializer({ children }: { children: ReactNode }) {
+  const { isFetching } = useAuthentication();
+
+  if (isFetching) {
+    return null; // TODO: <Skeleton />
+  }
+
+  return <>{children}</>;
+}
+
 function RootLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppInitializer>{children}</AppInitializer>
+      </QueryClientProvider>
       <GlobalToaster position="top-center" />
     </>
   );
