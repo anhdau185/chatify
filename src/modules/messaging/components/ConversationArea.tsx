@@ -11,7 +11,7 @@ export default function ConversationArea() {
 
   const handleSend = () => {
     if (message.trim()) {
-      console.log('Sending:', message);
+      // console.log('Sending:', message);
       setMessage('');
     }
   };
