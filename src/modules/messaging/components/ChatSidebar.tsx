@@ -1,6 +1,6 @@
 import { Search, Sidebar } from 'lucide-react';
 
-import { MyAccountDropdown } from '@/modules/profile';
+import { MyAccountDropdown } from '@/modules/user';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
