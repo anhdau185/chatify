@@ -17,8 +17,11 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-function endpoint(route: string) {
-  return `${API_HOST}${route}`;
+function endpoint(
+  route: string,
+  opts: { protocol: 'http' | 'https' | 'ws' | 'wss' } = { protocol: 'http' },
+) {
+  return `${opts.protocol}://${API_HOST}${route}`;
 }
 
 const deferSideEffect = setTimeout;

@@ -34,7 +34,7 @@ const createWindow = () => {
               "style-src 'self' 'unsafe-inline'; " +
               "img-src 'self' data:; " +
               "font-src 'self' data:; " +
-              "connect-src 'self' http://localhost:8080 ws://localhost:3000;",
+              "connect-src 'self' http://localhost:8080 ws://localhost:8080/ws;",
           ],
         },
       });
