@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
-import type { User } from '../types';
+import type { PublicUser } from '../types';
 
 export interface AuthState {
   access: string | null;
-  authenticatedUser: User | null;
-  setAuth: (auth: { access: string; authenticatedUser: User }) => void;
+  authenticatedUser: PublicUser | null;
+  setAuth: (auth: { access: string; authenticatedUser: PublicUser }) => void;
   removeAuth: () => void;
 }
 

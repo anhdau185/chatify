@@ -8,7 +8,8 @@ interface JwtPayload {
   jti?: string;
 }
 
-interface User extends JwtPayload {
+// the same PublicUser interface from backend
+interface PublicUser extends JwtPayload {
   id: number;
   name: string;
   email: string | null;
@@ -23,7 +24,7 @@ interface LoginCredentials {
 interface LoginResponse {
   success: boolean;
   access: string;
-  authenticatedUser: User;
+  authenticatedUser: PublicUser;
 }
 
 interface AuthResponse extends LoginResponse {}
@@ -37,5 +38,5 @@ export type {
   LoginCredentials,
   LoginResponse,
   LogoutResponse,
-  User,
+  PublicUser,
 };
