@@ -7,7 +7,11 @@ import { Input } from '@components/ui/input';
 import { abbreviate } from '@shared/lib/utils';
 import { CONTACTS } from '../mocks';
 
-export default function ChatSidebar() {
+export default function ChatSidebar({
+  contacts,
+}: {
+  contacts: typeof CONTACTS;
+}) {
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
       {/* Sidebar Header */}
@@ -36,7 +40,7 @@ export default function ChatSidebar() {
 
       {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
-        {CONTACTS.map(contact => (
+        {contacts.map(contact => (
           <div
             key={contact.id}
             className={`flex cursor-pointer items-center gap-3 p-4 transition-colors ${

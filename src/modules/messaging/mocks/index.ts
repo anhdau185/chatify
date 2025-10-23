@@ -85,4 +85,6 @@ const MESSAGES = [
   },
 ];
 
-export { CONTACTS, MESSAGES };
+const ROOM_ID = '8897c46b-7fd8-45a4-a12b-8dabf64e4427';
+
+export { CONTACTS, MESSAGES, ROOM_ID };

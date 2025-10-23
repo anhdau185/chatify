@@ -6,29 +6,30 @@ import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
-import { toast } from 'sonner';
-import { MESSAGES } from '../mocks';
+import { abbreviate } from '@shared/lib/utils';
 import * as wsClient from '../socket';
+import { ChatMessage } from '../types';
 
-const ROOM_ID = '8897c46b-7fd8-45a4-a12b-8dabf64e4427'; // TODO: Fetch chat rooms and get ID from there
-
-export default function ConversationArea() {
-  const senderId = useAuthStore(state => state.authenticatedUser?.id)!; // user ID should always be non-nullable at this stage
+export default function ConversationArea({ roomId }: { roomId: string }) {
+  const user = useAuthStore(state => state.authenticatedUser)!; // user should always be non-nullable at this stage
   const [inputMsg, setInputMsg] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const handleSend = () => {
     const textMsgContent = inputMsg.trim();
-
     if (textMsgContent) {
-      wsClient.chat({
+      const wsPayload: ChatMessage = {
         id: uuidv4(),
-        roomId: ROOM_ID,
-        senderId,
+        roomId,
+        senderId: user.id,
+        senderName: user.name,
         content: textMsgContent,
         status: 'sending',
         createdAt: Date.now(),
-      });
+      };
 
+      wsClient.chat(wsPayload);
+      setMessages(prevMsgs => [...prevMsgs, wsPayload]);
       setInputMsg(''); // clear input after sending
     }
   };
@@ -37,14 +38,13 @@ export default function ConversationArea() {
     wsClient.connect({
       onOpen() {
         wsClient.join({
-          roomId: ROOM_ID,
-          senderId: senderId,
+          roomId,
+          senderId: user.id,
         });
       },
 
-      onReceive(data) {
-        // TODO: Do something when receiving a message
-        toast.success(data.content);
+      onReceive(chatMsg) {
+        setMessages(prevMsgs => [...prevMsgs, chatMsg]);
       },
     });
   }, []);
@@ -74,40 +74,43 @@ export default function ConversationArea() {
 
       {/* Conversation History Area */}
       <div className="flex-1 space-y-4 overflow-y-auto p-6">
-        {MESSAGES.map(msg => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-          >
+        {messages.map(msg => {
+          const isOwnMsg = msg.senderId === user.id;
+          return (
             <div
-              className={`flex max-w-md gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}
+              key={msg.id}
+              className={`flex ${isOwnMsg ? 'justify-end' : 'justify-start'}`}
             >
-              {msg.sender === 'other' && (
-                <Avatar className="mt-auto h-8 w-8">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-xs font-semibold text-white">
-                    AR
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <div>
-                <div
-                  className={`rounded-2xl px-4 py-2 ${
-                    msg.sender === 'me'
-                      ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                      : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm'
-                  }`}
-                >
-                  <p className="text-sm leading-relaxed">{msg.text}</p>
+              <div
+                className={`flex max-w-md gap-2 ${isOwnMsg ? 'flex-row-reverse' : ''}`}
+              >
+                {!isOwnMsg && (
+                  <Avatar className="mt-auto h-8 w-8">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-xs font-semibold text-white">
+                      {abbreviate(msg.senderName)}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div>
+                  <div
+                    className={`rounded-2xl px-4 py-2 ${
+                      isOwnMsg
+                        ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                        : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm'
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                  </div>
+                  <p
+                    className={`mt-1 px-1 text-xs text-slate-400 ${isOwnMsg ? 'text-right' : ''}`}
+                  >
+                    {msg.createdAt}
+                  </p>
                 </div>
-                <p
-                  className={`mt-1 px-1 text-xs text-slate-400 ${msg.sender === 'me' ? 'text-right' : ''}`}
-                >
-                  {msg.time}
-                </p>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Chat Input Area */}

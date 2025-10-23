@@ -11,6 +11,7 @@ interface ChatMessage {
   id: string;
   roomId: ChatRoom['id'];
   senderId: PublicUser['id'];
+  senderName: PublicUser['name'];
   content?: string;
   imageUrl?: string;
   reactions?: Record<string, string[]>; // emoji -> userIds[]
