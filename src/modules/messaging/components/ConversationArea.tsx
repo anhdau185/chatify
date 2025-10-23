@@ -9,7 +9,7 @@ import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as wsClient from '../socket';
-import { ChatMessage } from '../types';
+import type { ChatMessage } from '../types';
 
 export default function ConversationArea({ roomId }: { roomId: string }) {
   const user = useAuthStore(state => state.authenticatedUser)!; // user should always be non-nullable at this stage
@@ -48,7 +48,11 @@ export default function ConversationArea({ roomId }: { roomId: string }) {
         setMessages(prevMsgs => [...prevMsgs, chatMsg]);
       },
     });
-  }, []);
+
+    // return () => {
+    //   wsClient.leave({ roomId, senderId: user.id }); // TODO: send a "leave room" signal to BE when roomId changes
+    // };
+  }, [roomId, user.id]);
 
   return (
     <div className="flex flex-1 flex-col">
