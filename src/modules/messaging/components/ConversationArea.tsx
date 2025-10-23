@@ -6,6 +6,7 @@ import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as wsClient from '../socket';
 import { ChatMessage } from '../types';
@@ -104,7 +105,7 @@ export default function ConversationArea({ roomId }: { roomId: string }) {
                   <p
                     className={`mt-1 px-1 text-xs text-slate-400 ${isOwnMsg ? 'text-right' : ''}`}
                   >
-                    {msg.createdAt}
+                    {dayjs(msg.createdAt).fromNow()}
                   </p>
                 </div>
               </div>
