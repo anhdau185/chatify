@@ -3,7 +3,7 @@ import type { PublicUser } from '@/modules/auth';
 interface ChatRoom {
   id: string;
   name?: string; // for group chats
-  members: Array<PublicUser['id']>; // user IDs
+  members: PublicUser[];
   isGroup: boolean;
 }
 
