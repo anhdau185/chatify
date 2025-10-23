@@ -18,17 +18,31 @@ interface ChatMessage {
   createdAt: number;
 }
 
-type WsMessage =
-  | {
-      type: 'join';
-      payload: {
-        roomId: ChatRoom['id'];
-        senderId: PublicUser['id'];
-      };
-    }
-  | {
-      type: 'message';
-      payload: ChatMessage;
-    };
+interface WsPayloadJoin {
+  roomId: ChatRoom['id'];
+  senderId: PublicUser['id'];
+}
 
-export type { ChatMessage, ChatRoom, WsMessage };
+type WsPayloadChat = ChatMessage;
+
+interface WsMessageJoin {
+  type: 'join';
+  payload: WsPayloadJoin;
+}
+
+interface WsMessageChat {
+  type: 'chat';
+  payload: WsPayloadChat;
+}
+
+type WsMessage = WsMessageJoin | WsMessageChat;
+
+export type {
+  ChatMessage,
+  ChatRoom,
+  WsPayloadJoin,
+  WsPayloadChat,
+  WsMessageJoin,
+  WsMessageChat,
+  WsMessage,
+};

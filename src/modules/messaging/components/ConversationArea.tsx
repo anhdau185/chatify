@@ -1,20 +1,53 @@
 import { MoreVertical, Paperclip, Send, Smile } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
+import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import { toast } from 'sonner';
 import { MESSAGES } from '../mocks';
+import * as wsClient from '../socket';
+
+const ROOM_ID = '8897c46b-7fd8-45a4-a12b-8dabf64e4427'; // TODO: Fetch chat rooms and get ID from there
 
 export default function ConversationArea() {
-  const [message, setMessage] = useState('');
+  const senderId = useAuthStore(state => state.authenticatedUser?.id)!; // user ID should always be non-nullable at this stage
+  const [inputMsg, setInputMsg] = useState('');
 
   const handleSend = () => {
-    if (message.trim()) {
-      // console.log('Sending:', message);
-      setMessage('');
+    const textMsgContent = inputMsg.trim();
+
+    if (textMsgContent) {
+      wsClient.chat({
+        id: uuidv4(),
+        roomId: ROOM_ID,
+        senderId,
+        content: textMsgContent,
+        status: 'sending',
+        createdAt: Date.now(),
+      });
+
+      setInputMsg(''); // clear input after sending
     }
   };
+
+  useEffect(() => {
+    wsClient.connect({
+      onOpen() {
+        wsClient.join({
+          roomId: ROOM_ID,
+          senderId: senderId,
+        });
+      },
+
+      onReceive(data) {
+        // TODO: Do something when receiving a message
+        toast.success(data.content);
+      },
+    });
+  }, []);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -89,8 +122,8 @@ export default function ConversationArea() {
           </Button>
           <div className="relative flex-1">
             <Input
-              value={message}
-              onChange={e => setMessage(e.target.value)}
+              value={inputMsg}
+              onChange={e => setInputMsg(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();

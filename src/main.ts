@@ -10,51 +10,56 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-const createWindow = () => {
+const createWindow = (username: string = 'chatify1') => {
+  const partition = `persist:${username}`;
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     show: false,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      partition,
     },
   });
 
   // Bypass CSP in development mode.
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    const isDev = !app.isPackaged;
+  session
+    .fromPartition(partition)
+    .webRequest.onHeadersReceived((details, callback) => {
+      const isDev = !app.isPackaged;
 
-    if (isDev) {
-      // CSP for development mode
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': [
-            "default-src 'self'; " +
-              "script-src 'self' 'unsafe-eval'; " +
-              "style-src 'self' 'unsafe-inline'; " +
-              "img-src 'self' data:; " +
-              "font-src 'self' data:; " +
-              "connect-src 'self' http://localhost:8080 ws://localhost:8080/ws;",
-          ],
-        },
-      });
-    } else {
-      // CSP for production
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': [
-            "default-src 'self'; " +
-              "script-src 'self'; " +
-              "style-src 'self' 'unsafe-inline'; " +
-              "img-src 'self' data:; " +
-              "font-src 'self' data:; " +
-              "connect-src 'self' https://api.chatify.com;",
-          ],
-        },
-      });
-    }
-  });
+      if (isDev) {
+        // CSP for development mode
+        callback({
+          responseHeaders: {
+            ...details.responseHeaders,
+            'Content-Security-Policy': [
+              "default-src 'self'; " +
+                "script-src 'self' 'unsafe-eval'; " +
+                "style-src 'self' 'unsafe-inline'; " +
+                "img-src 'self' data:; " +
+                "font-src 'self' data:; " +
+                "connect-src 'self' http://localhost:8080 ws://localhost:8080/messaging/ws;",
+            ],
+          },
+        });
+      } else {
+        // CSP for production
+        callback({
+          responseHeaders: {
+            ...details.responseHeaders,
+            'Content-Security-Policy': [
+              "default-src 'self'; " +
+                "script-src 'self'; " +
+                "style-src 'self' 'unsafe-inline'; " +
+                "img-src 'self' data:; " +
+                "font-src 'self' data:; " +
+                "connect-src 'self' https://api.chatify.com;",
+            ],
+          },
+        });
+      }
+    });
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
@@ -68,7 +73,10 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createWindow('chatify1'); // Client 1
+  createWindow('chatify2'); // Client 2
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -83,7 +91,7 @@ app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createWindow('chatify1');
   }
 });
 
