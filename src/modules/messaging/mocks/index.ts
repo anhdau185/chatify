@@ -87,4 +87,57 @@ const MESSAGES = [
 
 const ROOM_ID = '8897c46b-7fd8-45a4-a12b-8dabf64e4427';
 
-export { CONTACTS, MESSAGES, ROOM_ID };
+const MOCK_USER_1 = {
+  id: 1,
+  name: 'Alex Rivera',
+  email: null,
+  username: 'chatify1',
+};
+
+const MOCK_USER_2 = {
+  id: 2,
+  name: 'Jordan Lee',
+  email: null,
+  username: 'chatify2',
+};
+
+const MOCK_USER_3 = {
+  id: 3,
+  name: 'Morgan Smith',
+  email: null,
+  username: 'chatify3',
+};
+
+const MOCK_CHAT_ROOM_1 = {
+  id: '8897c46b-7fd8-45a4-a12b-8dabf64e4427',
+  members: [MOCK_USER_1, MOCK_USER_2], // MOCK_USER_1 and MOCK_USER_2
+  isGroup: false, // 1:1 DM conversation
+};
+
+const MOCK_CHAT_ROOM_2 = {
+  id: '40194dfa-5e2f-450e-af6e-07404d48da98',
+  members: [MOCK_USER_1, MOCK_USER_3], // MOCK_USER_1 and MOCK_USER_3
+  isGroup: false, // 1:1 DM conversation
+};
+
+const MOCK_CHAT_ROOM_3 = {
+  id: 'f64b6e1a-338c-46dd-90aa-ceaedf780fad',
+  members: [MOCK_USER_2, MOCK_USER_3], // MOCK_USER_2 and MOCK_USER_3
+  isGroup: false, // 1:1 DM conversation
+};
+
+const MOCK_GROUP_CHAT_ROOM = {
+  id: '5d64a654-8dde-47f2-84da-17733ea0c6ad',
+  name: 'Study Group',
+  members: [MOCK_USER_1, MOCK_USER_2, MOCK_USER_3],
+  isGroup: true, // Group chat
+};
+
+const ALL_MOCK_CHAT_ROOMS = [
+  MOCK_CHAT_ROOM_1,
+  MOCK_CHAT_ROOM_2,
+  MOCK_CHAT_ROOM_3,
+  MOCK_GROUP_CHAT_ROOM,
+];
+
+export { CONTACTS, MESSAGES, ROOM_ID, ALL_MOCK_CHAT_ROOMS };

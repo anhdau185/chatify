@@ -1,4 +1,4 @@
-import { MoreVertical, Paperclip, Send, Smile } from 'lucide-react';
+import { MoreVertical, Paperclip, Send, Smile, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -9,10 +9,12 @@ import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as wsClient from '../socket';
+import { useSelectedRoomStore } from '../store';
 import type { ChatMessage } from '../types';
 
-export default function ConversationArea({ roomId }: { roomId: string }) {
+export default function ConversationArea() {
   const user = useAuthStore(state => state.authenticatedUser)!; // user should always be non-nullable at this stage
+  const selectedRoom = useSelectedRoomStore(state => state.selectedRoom)!; // selectedRoom should always be non-nullable at this stage
   const [inputMsg, setInputMsg] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -21,7 +23,7 @@ export default function ConversationArea({ roomId }: { roomId: string }) {
     if (textMsgContent) {
       const wsPayload: ChatMessage = {
         id: uuidv4(),
-        roomId,
+        roomId: selectedRoom.id,
         senderId: user.id,
         senderName: user.name,
         content: textMsgContent,
@@ -39,7 +41,7 @@ export default function ConversationArea({ roomId }: { roomId: string }) {
     wsClient.connect({
       onOpen() {
         wsClient.join({
-          roomId,
+          roomId: selectedRoom.id,
           senderId: user.id,
         });
       },
@@ -52,7 +54,7 @@ export default function ConversationArea({ roomId }: { roomId: string }) {
     // return () => {
     //   wsClient.leave({ roomId, senderId: user.id }); // TODO: send a "leave room" signal to BE when roomId changes
     // };
-  }, [roomId, user.id]);
+  }, [selectedRoom.id, user.id]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -60,15 +62,25 @@ export default function ConversationArea({ roomId }: { roomId: string }) {
       <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
-                AR
-              </AvatarFallback>
+            <Avatar className="h-12 w-12">
+              {selectedRoom.isGroup ? (
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
+                  <Users />
+                </AvatarFallback>
+              ) : (
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
+                  {abbreviate(selectedRoom.members[0].name)}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div className="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
           </div>
           <div>
-            <h2 className="font-semibold text-slate-800">Alex Rivera</h2>
+            <h2 className="font-semibold text-slate-800">
+              {selectedRoom.isGroup
+                ? selectedRoom.name!
+                : selectedRoom.members[0].name}
+            </h2>
             <p className="text-xs text-green-500">Active now</p>
           </div>
         </div>
