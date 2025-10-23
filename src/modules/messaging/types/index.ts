@@ -38,6 +38,11 @@ interface WsMessageChat {
 
 type WsMessage = WsMessageJoin | WsMessageChat;
 
+interface ChatRoomsResponse {
+  success: boolean;
+  data: ChatRoom[];
+}
+
 export type {
   ChatMessage,
   ChatRoom,
@@ -46,4 +51,5 @@ export type {
   WsMessageJoin,
   WsMessageChat,
   WsMessage,
+  ChatRoomsResponse,
 };

@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
+import { isEmpty } from 'lodash-es';
 import { twMerge } from 'tailwind-merge';
 
 import { API_HOST } from '../constants';
@@ -19,9 +20,20 @@ function cn(...inputs: ClassValue[]) {
 
 function endpoint(
   route: string,
-  opts: { protocol: 'http' | 'https' | 'ws' | 'wss' } = { protocol: 'http' },
+  opts?: {
+    protocol?: 'http' | 'https' | 'ws' | 'wss';
+    queryParams?: Record<string, string>;
+  },
 ) {
-  return `${opts.protocol}://${API_HOST}${route}`;
+  const protocol = opts?.protocol || 'http';
+  const queryParams = opts?.queryParams ?? {};
+
+  if (isEmpty(queryParams)) {
+    return `${protocol}://${API_HOST}${route}`;
+  }
+
+  const queryString = new URLSearchParams(queryParams).toString();
+  return `${protocol}://${API_HOST}${route}?${queryString}`;
 }
 
 const deferSideEffect = setTimeout;

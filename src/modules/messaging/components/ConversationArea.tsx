@@ -1,5 +1,5 @@
 import { MoreVertical, Paperclip, Send, Smile, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/modules/auth';
@@ -13,8 +13,16 @@ import { useSelectedRoomStore } from '../store';
 import type { ChatMessage } from '../types';
 
 export default function ConversationArea() {
-  const user = useAuthStore(state => state.authenticatedUser)!; // user should always be non-nullable at this stage
-  const selectedRoom = useSelectedRoomStore(state => state.selectedRoom)!; // selectedRoom should always be non-nullable at this stage
+  const user = useAuthStore(state => state.authenticatedUser!); // user should always be non-nullable at this stage
+  const selectedRoom = useSelectedRoomStore(state => state.selectedRoom!); // selectedRoom should always be non-nullable at this stage
+  const dmChatPartner = useMemo(
+    () =>
+      !selectedRoom.isGroup
+        ? selectedRoom.members.find(member => member.id !== user.id)!
+        : null,
+    [selectedRoom, user.id],
+  );
+
   const [inputMsg, setInputMsg] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -77,9 +85,7 @@ export default function ConversationArea() {
           </div>
           <div>
             <h2 className="font-semibold text-slate-800">
-              {selectedRoom.isGroup
-                ? selectedRoom.name!
-                : selectedRoom.members[0].name}
+              {selectedRoom.isGroup ? selectedRoom.name! : dmChatPartner!.name}
             </h2>
             <p className="text-xs text-green-500">Active now</p>
           </div>
@@ -121,7 +127,7 @@ export default function ConversationArea() {
                   <p
                     className={`mt-1 px-1 text-xs text-slate-400 ${isOwnMsg ? 'text-right' : ''}`}
                   >
-                    {dayjs(msg.createdAt).fromNow()}
+                    {dayjs(msg.createdAt).format('HH:mm')}
                   </p>
                 </div>
               </div>

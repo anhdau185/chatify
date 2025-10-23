@@ -1,5 +1,6 @@
 import { Search, Sidebar, Users } from 'lucide-react';
 
+import { useAuthStore } from '@/modules/auth';
 import { MyAccountDropdown } from '@/modules/user';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
@@ -9,7 +10,9 @@ import { useSelectedRoomStore } from '../store';
 import type { ChatRoom } from '../types';
 
 export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
-  const { selectedRoom, setSelectedRoom } = useSelectedRoomStore();
+  const user = useAuthStore(state => state.authenticatedUser!); // user should always be non-nullable at this stage
+  const selectedRoom = useSelectedRoomStore(state => state.selectedRoom!); // selectedRoom should always be non-nullable at this stage
+  const setSelectedRoom = useSelectedRoomStore(state => state.setSelectedRoom);
 
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
@@ -40,19 +43,22 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
       {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
         {rooms.map(room => {
-          const isRoomActive = room.id === selectedRoom?.id;
           const isOnline = true;
+          const isRoomSelected = room.id === selectedRoom?.id;
+          const dmChatPartner = !room.isGroup
+            ? room.members.find(member => member.id !== user.id)!
+            : null;
 
           return (
             <div
               key={room.id}
               className={`flex cursor-pointer items-center gap-3 p-4 transition-colors ${
-                isRoomActive
+                isRoomSelected
                   ? 'border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50'
                   : 'hover:bg-slate-50'
               }`}
               onClick={() => {
-                if (!isRoomActive) setSelectedRoom(room);
+                if (!isRoomSelected) setSelectedRoom(room);
               }}
             >
               <div className="relative">
@@ -63,7 +69,7 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
                     </AvatarFallback>
                   ) : (
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
-                      {abbreviate(room.members[0].name)}
+                      {abbreviate(dmChatPartner!.name)}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -74,7 +80,7 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex items-center justify-between">
                   <h3 className="truncate font-semibold text-slate-800">
-                    {room.isGroup ? room.name! : room.members[0].name}
+                    {room.isGroup ? room.name! : dmChatPartner!.name}
                   </h3>
                   {/* <span className="text-xs text-slate-500">{room.time}</span> */}
                 </div>
