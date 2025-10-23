@@ -9,7 +9,7 @@ import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as wsClient from '../socket';
-import { useSelectedRoomStore } from '../store';
+import { useSelectedRoomStore } from '../store/selectedRoomStore';
 import type { ChatMessage } from '../types';
 
 export default function ConversationArea() {

@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/modules/auth';
 import SkeletonScreen from '@components/SkeletonScreen';
 import { useChatRooms } from '../api/queries';
-import { useSelectedRoomStore } from '../store';
+import { useSelectedRoomStore } from '../store/selectedRoomStore';
 import ChatSidebar from './ChatSidebar';
 import ConversationArea from './ConversationArea';
 

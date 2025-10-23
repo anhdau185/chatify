@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { abbreviate } from '@shared/lib/utils';
-import { useSelectedRoomStore } from '../store';
+import { useSelectedRoomStore } from '../store/selectedRoomStore';
 import type { ChatRoom } from '../types';
 
 export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
