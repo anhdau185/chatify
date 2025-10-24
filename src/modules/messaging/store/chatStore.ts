@@ -44,12 +44,28 @@ export const useChatStore = create<ChatState & ChatActions>(set => ({
 
   addMessage(msg) {
     set(state => {
-      const prev = state.messagesByRoom[msg.roomId] || [];
+      const prevMsgs =
+        (state.messagesByRoom[msg.roomId] as ChatMessage[] | undefined) ?? [];
+      const room = (state.rooms[msg.roomId] as ChatRoom | undefined) ?? null;
+
       return {
+        // append message to the list of messages in the corresponding room
         messagesByRoom: {
           ...state.messagesByRoom,
-          [msg.roomId]: [...prev, msg],
+          [msg.roomId]: [...prevMsgs, msg],
         },
+
+        // update lastMsg and lastMsgAt in the corresponding room (if exists)
+        rooms: room
+          ? {
+              ...state.rooms,
+              [msg.roomId]: {
+                ...room,
+                lastMsg: msg,
+                lastMsgAt: msg.createdAt,
+              },
+            }
+          : state.rooms,
       };
     });
   },
@@ -83,7 +99,8 @@ export function useActiveRoom(): ChatRoom | null {
     return null;
   }
 
-  return rooms[activeRoomId];
+  const activeRoom = rooms[activeRoomId] as ChatRoom | undefined;
+  return activeRoom ?? null;
 }
 
 export function useMessagesInActiveRoom(): ChatMessage[] {
