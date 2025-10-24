@@ -5,6 +5,8 @@ interface ChatRoom {
   name?: string; // for group chats
   members: PublicUser[];
   isGroup: boolean;
+  lastMsg?: ChatMessage;
+  lastMsgAt?: number;
 }
 
 interface ChatMessage {
