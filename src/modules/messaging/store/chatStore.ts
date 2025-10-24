@@ -31,9 +31,9 @@ export const useChatStore = create<ChatState & ChatActions>(set => ({
   },
 
   setRooms(roomsArr) {
-    set(() => ({
+    set({
       rooms: roomsArr.reduce((acc, room) => ({ ...acc, [room.id]: room }), {}),
-    }));
+    });
   },
 
   upsertRoom(room) {

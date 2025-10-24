@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 
 import type { PublicUser } from '../types';
@@ -36,5 +37,5 @@ export const useAuthStore = create<AuthState & AuthActions>(set => ({
 
 export function useIsAuthenticated() {
   const access = useAuthStore(state => state.access);
-  return !!access;
+  return useMemo(() => !!access, [access]);
 }
