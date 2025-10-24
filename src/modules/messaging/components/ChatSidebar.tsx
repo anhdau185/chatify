@@ -7,13 +7,13 @@ import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
-import { useChatStore } from '../store/chatStore';
-import type { ChatRoom } from '../types';
+import { useChatRooms, useChatStore } from '../store/chatStore';
 
-export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
+export default function ChatSidebar() {
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
+  const rooms = useChatRooms();
 
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
@@ -83,14 +83,17 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
                   <h3 className="truncate font-semibold text-slate-800">
                     {room.isGroup ? room.name! : dmChatPartner!.name}
                   </h3>
-                  <span className="text-xs text-slate-500">
-                    {dayjs(room.lastMsgAt).format('HH:mm')}
-                  </span>
+                  {room.lastMsgAt && (
+                    <span className="text-xs text-slate-400">
+                      {dayjs(room.lastMsgAt).format('HH:mm')}
+                    </span>
+                  )}
                 </div>
-                <p className="truncate text-sm text-slate-500">
+                <p className="truncate text-sm text-slate-400">
                   {room.lastMsg ? room.lastMsg.content : 'No messages yet'}
                 </p>
               </div>
+
               {/* {contact.unread > 0 && (
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
                   {room.unreadCount}

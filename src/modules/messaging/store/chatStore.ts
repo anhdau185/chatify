@@ -91,6 +91,11 @@ export const useChatStore = create<ChatState & ChatActions>(set => ({
   },
 }));
 
+export function useChatRooms(): ChatRoom[] {
+  const roomsRecord = useChatStore(state => state.rooms);
+  return Object.values(roomsRecord);
+}
+
 export function useActiveRoom(): ChatRoom | null {
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const rooms = useChatStore(state => state.rooms);

@@ -27,7 +27,7 @@ export default function ChatLayout() {
   return (
     <WebSocketWrapper>
       <div className="flex h-screen bg-slate-50">
-        <ChatSidebar rooms={rooms} />
+        <ChatSidebar />
         {activeRoomId && <ConversationArea />}
       </div>
     </WebSocketWrapper>
