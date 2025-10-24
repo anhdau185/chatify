@@ -1,37 +1,35 @@
+import { isEmpty } from 'lodash-es';
 import { useEffect, useMemo } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
 import SkeletonScreen from '@components/SkeletonScreen';
 import { useChatRooms } from '../api/queries';
-import { useSelectedRoomStore } from '../store/selectedRoomStore';
+import { useChatStore } from '../store/chatStore';
 import ChatSidebar from './ChatSidebar';
 import ConversationArea from './ConversationArea';
+import WebSocketWrapper from './WebSocketWrapper';
 
 export default function ChatLayout() {
   const userId = useAuthStore(state => state.authenticatedUser!.id);
   const { isFetching, data: responseData } = useChatRooms(userId);
   const rooms = useMemo(() => responseData?.data || [], [responseData?.data]);
-  const { selectedRoom, setSelectedRoom } = useSelectedRoomStore();
+  const setRooms = useChatStore(state => state.setRooms);
+  const activeRoomId = useChatStore(state => state.activeRoomId);
 
   useEffect(() => {
-    // initially auto-select the first room if none is selected
-    if (!selectedRoom && rooms.length > 0) {
-      setSelectedRoom(rooms[0]);
-    }
-  }, [selectedRoom, rooms, setSelectedRoom]);
+    if (!isEmpty(rooms)) setRooms(rooms);
+  }, [rooms]);
 
-  if (isFetching || !selectedRoom) {
-    return (
-      <div className="flex h-screen bg-slate-50">
-        <SkeletonScreen />
-      </div>
-    );
+  if (isFetching || !responseData) {
+    return <SkeletonScreen />;
   }
 
   return (
-    <div className="flex h-screen bg-slate-50">
-      <ChatSidebar rooms={rooms} />
-      <ConversationArea />
-    </div>
+    <WebSocketWrapper>
+      <div className="flex h-screen bg-slate-50">
+        <ChatSidebar rooms={rooms} />
+        {activeRoomId && <ConversationArea />}
+      </div>
+    </WebSocketWrapper>
   );
 }

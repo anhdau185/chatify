@@ -6,13 +6,13 @@ import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { abbreviate } from '@shared/lib/utils';
-import { useSelectedRoomStore } from '../store/selectedRoomStore';
+import { useChatStore } from '../store/chatStore';
 import type { ChatRoom } from '../types';
 
 export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
-  const user = useAuthStore(state => state.authenticatedUser!); // user should always be non-nullable at this stage
-  const selectedRoom = useSelectedRoomStore(state => state.selectedRoom!); // selectedRoom should always be non-nullable at this stage
-  const setSelectedRoom = useSelectedRoomStore(state => state.setSelectedRoom);
+  const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
+  const activeRoomId = useChatStore(state => state.activeRoomId);
+  const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
 
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
@@ -44,9 +44,9 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
       <div className="flex-1 overflow-y-auto">
         {rooms.map(room => {
           const isOnline = true;
-          const isRoomSelected = room.id === selectedRoom?.id;
+          const isRoomSelected = room.id === activeRoomId;
           const dmChatPartner = !room.isGroup
-            ? room.members.find(member => member.id !== user.id)!
+            ? room.members.find(member => member.id !== userId)!
             : null;
 
           return (
@@ -58,7 +58,7 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
                   : 'hover:bg-slate-50'
               }`}
               onClick={() => {
-                if (!isRoomSelected) setSelectedRoom(room);
+                if (!isRoomSelected) setActiveRoomId(room.id);
               }}
             >
               <div className="relative">

@@ -1,5 +1,5 @@
 import { MoreVertical, Paperclip, Send, Smile, Users } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/modules/auth';
@@ -9,29 +9,36 @@ import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as wsClient from '../socket';
-import { useSelectedRoomStore } from '../store/selectedRoomStore';
+import {
+  useActiveRoom,
+  useChatStore,
+  useMessagesInActiveRoom,
+} from '../store/chatStore';
 import type { ChatMessage } from '../types';
 
 export default function ConversationArea() {
-  const user = useAuthStore(state => state.authenticatedUser!); // user should always be non-nullable at this stage
-  const selectedRoom = useSelectedRoomStore(state => state.selectedRoom!); // selectedRoom should always be non-nullable at this stage
-  const dmChatPartner = useMemo(
-    () =>
-      !selectedRoom.isGroup
-        ? selectedRoom.members.find(member => member.id !== user.id)!
-        : null,
-    [selectedRoom, user.id],
-  );
-
   const [inputMsg, setInputMsg] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
+
+  const addMessage = useChatStore(state => state.addMessage);
+  const activeRoomId = useChatStore(state => state.activeRoomId!);
+  const activeRoom = useActiveRoom()!; // activeRoomId is always non-nullable at this stage, so is activeRoom
+  const messages = useMessagesInActiveRoom();
+
+  const dmChatPartner = useMemo(() => {
+    if (!activeRoom.isGroup) {
+      return activeRoom.members.find(member => member.id !== user.id)!;
+    }
+    return null;
+  }, [activeRoom, user.id]);
 
   const handleSend = () => {
     const textMsgContent = inputMsg.trim();
+
     if (textMsgContent) {
       const wsPayload: ChatMessage = {
         id: uuidv4(),
-        roomId: selectedRoom.id,
+        roomId: activeRoomId,
         senderId: user.id,
         senderName: user.name,
         content: textMsgContent,
@@ -40,29 +47,10 @@ export default function ConversationArea() {
       };
 
       wsClient.chat(wsPayload);
-      setMessages(prevMsgs => [...prevMsgs, wsPayload]);
+      addMessage(wsPayload);
       setInputMsg(''); // clear input after sending
     }
   };
-
-  useEffect(() => {
-    wsClient.connect({
-      onOpen() {
-        wsClient.join({
-          roomId: selectedRoom.id,
-          senderId: user.id,
-        });
-      },
-
-      onReceive(chatMsg) {
-        setMessages(prevMsgs => [...prevMsgs, chatMsg]);
-      },
-    });
-
-    // return () => {
-    //   wsClient.leave({ roomId, senderId: user.id }); // TODO: send a "leave room" signal to BE when roomId changes
-    // };
-  }, [selectedRoom.id, user.id]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -71,13 +59,13 @@ export default function ConversationArea() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <Avatar className="h-12 w-12">
-              {selectedRoom.isGroup ? (
+              {activeRoom.isGroup ? (
                 <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
                   <Users />
                 </AvatarFallback>
               ) : (
                 <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
-                  {abbreviate(selectedRoom.members[0].name)}
+                  {abbreviate(activeRoom.members[0].name)}
                 </AvatarFallback>
               )}
             </Avatar>
@@ -85,7 +73,7 @@ export default function ConversationArea() {
           </div>
           <div>
             <h2 className="font-semibold text-slate-800">
-              {selectedRoom.isGroup ? selectedRoom.name! : dmChatPartner!.name}
+              {activeRoom.isGroup ? activeRoom.name! : dmChatPartner!.name}
             </h2>
             <p className="text-xs text-green-500">Active now</p>
           </div>
