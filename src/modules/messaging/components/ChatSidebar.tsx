@@ -5,6 +5,7 @@ import { MyAccountDropdown } from '@/modules/user';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import { useChatStore } from '../store/chatStore';
 import type { ChatRoom } from '../types';
@@ -82,9 +83,13 @@ export default function ChatSidebar({ rooms }: { rooms: ChatRoom[] }) {
                   <h3 className="truncate font-semibold text-slate-800">
                     {room.isGroup ? room.name! : dmChatPartner!.name}
                   </h3>
-                  {/* <span className="text-xs text-slate-500">{room.time}</span> */}
+                  <span className="text-xs text-slate-500">
+                    {dayjs(room.lastMsgAt).format('HH:mm')}
+                  </span>
                 </div>
-                {/* <p className="truncate text-sm text-slate-500">{room.lastMsg}</p> */}
+                <p className="truncate text-sm text-slate-500">
+                  {room.lastMsg ? room.lastMsg.content : 'No messages yet'}
+                </p>
               </div>
               {/* {contact.unread > 0 && (
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
