@@ -33,3 +33,8 @@ export const useAuthStore = create<AuthState & AuthActions>(set => ({
     });
   },
 }));
+
+export function useIsAuthenticated() {
+  const access = useAuthStore(state => state.access);
+  return !!access;
+}

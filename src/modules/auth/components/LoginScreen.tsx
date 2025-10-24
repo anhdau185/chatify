@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@components/ui/card';
-import { useAuthStore } from '../store';
+import { useIsAuthenticated } from '../store';
 import LoginForm from './LoginForm';
 
 function LoginLayout() {
@@ -35,7 +35,7 @@ function LoginLayout() {
 }
 
 export default function LoginScreen() {
-  const isAuthenticated = useAuthStore(state => !!state.access);
+  const isAuthenticated = useIsAuthenticated();
 
   if (isAuthenticated) {
     return <Navigate to="/chat" replace />;
