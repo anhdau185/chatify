@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 import { deferSideEffect, endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
-import { useAuthStore } from '../store';
+import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials, LoginResponse, LogoutResponse } from '../types';
 
 function useLogin() {

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@components/ui/card';
-import { useIsAuthenticated } from '../store';
+import { useIsAuthenticated } from '../store/authStore';
 import LoginForm from './LoginForm';
 
 function LoginLayout() {

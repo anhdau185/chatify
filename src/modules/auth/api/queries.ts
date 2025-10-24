@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 import { endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
-import { useAuthStore } from '../store';
+import { useAuthStore } from '../store/authStore';
 import type { AuthResponse } from '../types';
 
 function useAuthentication() {
