@@ -1,5 +1,4 @@
 import { useAuthStore, useLogout } from '@/modules/auth';
-import { abbreviate } from '@/modules/shared/lib/utils';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import {
@@ -10,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
+import { abbreviate } from '@shared/lib/utils';
 
 export default function MyAccountDropdown() {
   const user = useAuthStore(state => state.authenticatedUser);
