@@ -8,7 +8,8 @@ import { useAuthStore } from '../store';
 import type { AuthResponse } from '../types';
 
 function useAuthentication() {
-  const { setAuth, removeAuth } = useAuthStore();
+  const setAuth = useAuthStore(state => state.setAuth);
+  const removeAuth = useAuthStore(state => state.removeAuth);
 
   const query = useQuery({
     queryKey: ['auth/me'],
@@ -43,10 +44,7 @@ function useAuthentication() {
     if (query.isError) removeAuth();
   }, [query.isError]);
 
-  return {
-    ...query,
-    isAuthenticated: query.isSuccess && query.data?.success === true,
-  };
+  return query;
 }
 
 export { useAuthentication };

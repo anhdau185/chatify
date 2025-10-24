@@ -2,29 +2,34 @@ import { create } from 'zustand';
 
 import type { PublicUser } from '../types';
 
-export interface AuthState {
+interface AuthState {
   access: string | null;
   authenticatedUser: PublicUser | null;
-  setAuth: (auth: { access: string; authenticatedUser: PublicUser }) => void;
+}
+
+interface AuthActions {
+  setAuth: (newAuthData: {
+    access: string;
+    authenticatedUser: PublicUser;
+  }) => void;
   removeAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>(set => ({
+export const useAuthStore = create<AuthState & AuthActions>(set => ({
   access: null,
   authenticatedUser: null,
 
-  setAuth(auth) {
-    set(state => ({
-      ...state,
-      ...auth,
-    }));
+  setAuth(newAuthData) {
+    set({
+      access: newAuthData.access,
+      authenticatedUser: newAuthData.authenticatedUser,
+    });
   },
 
   removeAuth() {
-    set(state => ({
-      ...state,
+    set({
       access: null,
       authenticatedUser: null,
-    }));
+    });
   },
 }));
