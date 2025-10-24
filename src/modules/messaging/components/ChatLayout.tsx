@@ -1,26 +1,29 @@
 import { isEmpty } from 'lodash-es';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
 import SkeletonScreen from '@components/SkeletonScreen';
-import { useChatRooms } from '../api/queries';
-import { useChatStore } from '../store/chatStore';
+import { useChatRoomsQuery } from '../api/queries';
+import { useChatRooms, useChatStore } from '../store/chatStore';
 import ChatSidebar from './ChatSidebar';
 import ConversationArea from './ConversationArea';
 import WebSocketWrapper from './WebSocketWrapper';
 
 export default function ChatLayout() {
   const userId = useAuthStore(state => state.authenticatedUser!.id);
-  const { isFetching, data: responseData } = useChatRooms(userId);
-  const rooms = useMemo(() => responseData?.data || [], [responseData?.data]);
-  const setRooms = useChatStore(state => state.setRooms);
   const activeRoomId = useChatStore(state => state.activeRoomId);
+  const localChatRooms = useChatRooms();
+
+  const { isInProgress, refetch: fetchRoomsFromServer } =
+    useChatRoomsQuery(userId);
 
   useEffect(() => {
-    if (!isEmpty(rooms)) setRooms(rooms);
-  }, [rooms]);
+    if (isEmpty(localChatRooms)) {
+      fetchRoomsFromServer();
+    }
+  }, [localChatRooms]);
 
-  if (isFetching || !responseData) {
+  if (isEmpty(localChatRooms) || isInProgress) {
     return <SkeletonScreen />;
   }
 
