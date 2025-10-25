@@ -40,7 +40,7 @@ function useChatRoomsQuery(userId: number) {
       const serverChatRooms = resData.data || [];
       setRooms(serverChatRooms);
     }
-  }, [resData]);
+  }, [resData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     ...query,

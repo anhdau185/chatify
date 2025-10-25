@@ -21,8 +21,8 @@ export default function ConversationArea() {
   const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
 
   const addMessage = useChatStore(state => state.addMessage);
-  const activeRoomId = useChatStore(state => state.activeRoomId!);
-  const activeRoom = useActiveRoom()!; // activeRoomId is always non-nullable at this stage, so is activeRoom
+  const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
+  const activeRoom = useActiveRoom()!; // so is activeRoom, as a result
   const messages = useMessagesInActiveRoom();
 
   const dmChatPartner = useMemo(() => {
