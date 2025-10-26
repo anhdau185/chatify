@@ -1,19 +1,20 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
+import { isEmpty } from 'lodash-es';
 import * as db from '../db';
 import * as wsClient from '../socket';
-import { useChatStore } from '../store/chatStore';
+import { useChatRoomIds, useChatStore } from '../store/chatStore';
 
 export default function WebSocketWrapper({
   children,
 }: {
   children: ReactNode;
 }) {
-  const joinedRooms = useRef(new Set<string>());
+  const alreadyJoinedFlag = useRef(false); // to prevent unnecessary re-joining rooms on every roomIds change
   const userId = useAuthStore(state => state.authenticatedUser!.id);
+  const roomIds = useChatRoomIds();
   const addMessage = useChatStore(state => state.addMessage);
-  const activeRoomId = useChatStore(state => state.activeRoomId);
 
   useEffect(() => {
     wsClient.connect(msg => {
@@ -28,20 +29,16 @@ export default function WebSocketWrapper({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (
-      !activeRoomId ||
-      joinedRooms.current.has(activeRoomId) ||
-      !wsClient.isOpen()
-    ) {
+    if (isEmpty(roomIds) || alreadyJoinedFlag.current || !wsClient.isOpen()) {
       return;
     }
 
+    alreadyJoinedFlag.current = true;
     wsClient.join({
+      roomIds,
       senderId: userId,
-      roomId: activeRoomId,
     });
-    joinedRooms.current.add(activeRoomId);
-  }, [activeRoomId, userId]);
+  }, [roomIds, userId]);
 
   return <>{children}</>;
 }

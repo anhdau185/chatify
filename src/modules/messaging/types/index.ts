@@ -1,5 +1,10 @@
 import type { PublicUser } from '@/modules/auth';
 
+interface ChatRoomsResponse {
+  success: boolean;
+  data: ChatRoom[];
+}
+
 interface ChatRoom {
   id: string;
   name?: string; // for group chats
@@ -22,7 +27,7 @@ interface ChatMessage {
 }
 
 interface WsPayloadJoin {
-  roomId: string;
+  roomIds: string[];
   senderId: number;
 }
 
@@ -39,11 +44,6 @@ interface WsMessageChat {
 }
 
 type WsMessage = WsMessageJoin | WsMessageChat;
-
-interface ChatRoomsResponse {
-  success: boolean;
-  data: ChatRoom[];
-}
 
 export type {
   ChatMessage,

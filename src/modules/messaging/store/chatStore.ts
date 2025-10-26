@@ -113,6 +113,11 @@ function useChatRooms(): ChatRoom[] {
   return Object.values(roomsRecord);
 }
 
+function useChatRoomIds(): string[] {
+  const roomsRecord = useChatStore(state => state.rooms);
+  return Object.keys(roomsRecord);
+}
+
 function useActiveRoom(): ChatRoom | null {
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const rooms = useChatStore(state => state.rooms);
@@ -151,16 +156,10 @@ useChatStore.subscribe(
   },
 );
 
-// subscribe to state.messagesByRoom changes and persist messages to db whenever changes happen
-// useChatStore.subscribe(
-//   state => state.messagesByRoom,
-//   messagesByRoom => {
-//     // debounce by 1s to avoid overly frequent writes to db.messages table
-//     debounce(() => {
-//       const allMessages = Object.values(messagesByRoom).flat();
-//       db.upsertMessages(allMessages);
-//     }, 1000);
-//   },
-// );
-
-export { useChatStore, useActiveRoom, useMessagesInActiveRoom, useChatRooms };
+export {
+  useChatStore,
+  useActiveRoom,
+  useMessagesInActiveRoom,
+  useChatRooms,
+  useChatRoomIds,
+};
