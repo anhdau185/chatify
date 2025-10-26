@@ -11,9 +11,9 @@ interface ChatRoom {
 
 interface ChatMessage {
   id: string;
-  roomId: ChatRoom['id'];
-  senderId: PublicUser['id'];
-  senderName: PublicUser['name'];
+  roomId: string;
+  senderId: number;
+  senderName: string;
   content?: string;
   imageUrl?: string;
   reactions?: Record<string, string[]>; // emoji -> userIds[]
@@ -22,8 +22,8 @@ interface ChatMessage {
 }
 
 interface WsPayloadJoin {
-  roomId: ChatRoom['id'];
-  senderId: PublicUser['id'];
+  roomId: string;
+  senderId: number;
 }
 
 type WsPayloadChat = ChatMessage;

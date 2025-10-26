@@ -34,6 +34,13 @@ export default function ChatSidebar() {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // if none is selected, select and show the last active room by default
+  useEffect(() => {
+    if (!activeRoomId && !isEmpty(rooms)) {
+      setActiveRoomId(rooms[0].id);
+    }
+  }, [activeRoomId, rooms]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
       {/* Sidebar Header */}
@@ -84,9 +91,7 @@ export default function ChatSidebar() {
                   ? 'border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50'
                   : 'hover:bg-slate-50'
               }`}
-              onClick={() => {
-                if (!isRoomSelected) setActiveRoomId(room.id);
-              }}
+              onClick={() => setActiveRoomId(room.id)}
             >
               <div className="relative">
                 <Avatar className="h-12 w-12">
