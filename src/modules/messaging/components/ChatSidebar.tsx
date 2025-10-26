@@ -9,7 +9,7 @@ import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Skeleton } from '@components/ui/skeleton';
 import dayjs from '@shared/lib/dayjs';
-import { abbreviate } from '@shared/lib/utils';
+import { abbreviate, getDmChatPartner, getRoomName } from '@shared/lib/utils';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
 import { useChatRooms, useChatStore } from '../store/chatStore';
@@ -76,10 +76,6 @@ export default function ChatSidebar() {
         {rooms.map(room => {
           const isOnline = true;
           const isRoomSelected = room.id === activeRoomId;
-          const dmChatPartner = !room.isGroup
-            ? room.members.find(member => member.id !== userId)!
-            : null;
-
           return (
             <div
               key={room.id}
@@ -100,7 +96,7 @@ export default function ChatSidebar() {
                     </AvatarFallback>
                   ) : (
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
-                      {abbreviate(dmChatPartner!.name)}
+                      {abbreviate(getDmChatPartner(room, userId)!.name)}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -111,7 +107,7 @@ export default function ChatSidebar() {
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex items-center justify-between">
                   <h3 className="truncate font-semibold text-slate-800">
-                    {room.isGroup ? room.name! : dmChatPartner!.name}
+                    {getRoomName(room, userId)}
                   </h3>
                   {room.lastMsgAt > 0 && (
                     <span className="text-xs text-slate-400">

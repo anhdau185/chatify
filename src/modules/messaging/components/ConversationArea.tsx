@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash-es';
 import { MoreVertical, Paperclip, Send, Smile, Users } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/modules/auth';
@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
-import { abbreviate } from '@shared/lib/utils';
+import { abbreviate, getRoomName } from '@shared/lib/utils';
 import * as db from '../db';
 import * as wsClient from '../socket';
 import {
@@ -27,13 +27,6 @@ export default function ConversationArea() {
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
   const activeRoom = useActiveRoom()!; // so is activeRoom, as a result
   const messages = useMessagesInActiveRoom();
-
-  const dmChatPartner = useMemo(() => {
-    if (!activeRoom.isGroup) {
-      return activeRoom.members.find(member => member.id !== user.id)!;
-    }
-    return null;
-  }, [activeRoom, user.id]);
 
   const handleSend = () => {
     const textMsgContent = inputMsg.trim();
@@ -85,7 +78,7 @@ export default function ConversationArea() {
           </div>
           <div>
             <h2 className="font-semibold text-slate-800">
-              {activeRoom.isGroup ? activeRoom.name! : dmChatPartner!.name}
+              {getRoomName(activeRoom, user.id)}
             </h2>
             <p className="text-xs text-green-500">Active now</p>
           </div>
