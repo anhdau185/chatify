@@ -25,10 +25,14 @@ function connect(
     onReceive(msg.payload, ws);
   };
 
-  ws.onclose = () => {
-    console.log(`lost connection to '${wsUrl}', retrying...`);
-    setTimeout(() => connect(onReceive), reconnectTimeoutMs); // attempt to reconnect
-    reconnectTimeoutMs = Math.min(reconnectTimeoutMs * 2, 15000); // exponential backoff
+  ws.onclose = e => {
+    if (e.code !== 1000) {
+      console.log(`lost connection to '${wsUrl}', retrying...`);
+      setTimeout(() => connect(onReceive), reconnectTimeoutMs); // attempt to reconnect
+      reconnectTimeoutMs = Math.min(reconnectTimeoutMs * 2, 15000); // exponential backoff
+    } else {
+      console.log(`connection to '${wsUrl}' closed normally.`);
+    }
   };
 }
 
@@ -67,4 +71,8 @@ function chat(
   }
 }
 
-export { connect, join, chat, isOpen };
+function disconnect() {
+  ws?.close(1000, 'Client closed connection normally');
+}
+
+export { connect, join, chat, isOpen, disconnect };

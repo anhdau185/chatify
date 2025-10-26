@@ -1,5 +1,6 @@
+import { isEmpty } from 'lodash-es';
 import { MoreVertical, Paperclip, Send, Smile, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/modules/auth';
@@ -8,6 +9,7 @@ import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
+import * as db from '../db';
 import * as wsClient from '../socket';
 import {
   useActiveRoom,
@@ -21,6 +23,7 @@ export default function ConversationArea() {
   const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
 
   const addMessage = useChatStore(state => state.addMessage);
+  const replaceRoomMessages = useChatStore(state => state.replaceRoomMessages);
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
   const activeRoom = useActiveRoom()!; // so is activeRoom, as a result
   const messages = useMessagesInActiveRoom();
@@ -48,9 +51,18 @@ export default function ConversationArea() {
 
       wsClient.chat(wsPayload);
       addMessage(wsPayload);
+      db.upsertSingleMessage(wsPayload);
       setInputMsg(''); // clear input after sending
     }
   };
+
+  useEffect(() => {
+    db.getRoomMessages(activeRoomId).then(messages => {
+      if (!isEmpty(messages)) {
+        replaceRoomMessages(activeRoomId, messages);
+      }
+    });
+  }, [activeRoomId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-1 flex-col">

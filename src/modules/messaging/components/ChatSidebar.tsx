@@ -1,19 +1,38 @@
+import { isEmpty } from 'lodash-es';
 import { Search, Sidebar, Users } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
 import { MyAccountDropdown } from '@/modules/user';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import { Skeleton } from '@components/ui/skeleton';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
+import { useChatRoomsQuery } from '../api/queries';
+import * as db from '../db';
 import { useChatRooms, useChatStore } from '../store/chatStore';
 
 export default function ChatSidebar() {
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
+  const { refetch: fetchRoomsApi, isFetching } = useChatRoomsQuery(userId);
+
+  const rooms = useChatRooms();
+  const setRooms = useChatStore(state => state.setRooms);
+
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
-  const rooms = useChatRooms();
+
+  useEffect(() => {
+    db.getRecentRooms().then(rooms => {
+      if (!isEmpty(rooms)) {
+        setRooms(rooms);
+      } else {
+        fetchRoomsApi();
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
@@ -43,6 +62,17 @@ export default function ChatSidebar() {
 
       {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
+        {isFetching &&
+          [1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12 flex-shrink-0 rounded-full" />
+              <div className="flex-1">
+                <Skeleton className="mb-2 h-4 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+            </div>
+          ))}
+
         {rooms.map(room => {
           const isOnline = true;
           const isRoomSelected = room.id === activeRoomId;
@@ -83,7 +113,7 @@ export default function ChatSidebar() {
                   <h3 className="truncate font-semibold text-slate-800">
                     {room.isGroup ? room.name! : dmChatPartner!.name}
                   </h3>
-                  {room.lastMsgAt && (
+                  {room.lastMsgAt > 0 && (
                     <span className="text-xs text-slate-400">
                       {dayjs(room.lastMsgAt).format('HH:mm')}
                     </span>

@@ -42,10 +42,7 @@ function useChatRoomsQuery(userId: number) {
     }
   }, [resData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return {
-    ...query,
-    isInProgress: query.isFetching || !resData,
-  };
+  return query;
 }
 
 // Imperatively fetch chat rooms for the given userId

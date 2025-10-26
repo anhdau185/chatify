@@ -1,5 +1,7 @@
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
+import * as db from '../db';
 import type { ChatMessage, ChatRoom } from '../types';
 
 type ChatState = {
@@ -12,6 +14,7 @@ type ChatActions = {
   setActiveRoomId: (roomId: string) => void;
   setRooms: (roomsArr: ChatRoom[]) => void;
   upsertRoom: (room: ChatRoom) => void;
+  replaceRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
   addMessage: (msg: ChatMessage) => void;
   updateMessage: (
     roomId: string,
@@ -21,82 +24,96 @@ type ChatActions = {
   removeMessage: (roomId: string, msgId: string) => void;
 };
 
-export const useChatStore = create<ChatState & ChatActions>(set => ({
-  rooms: {},
-  messagesByRoom: {},
-  activeRoomId: null,
+const useChatStore = create<ChatState & ChatActions>()(
+  subscribeWithSelector(set => ({
+    rooms: {},
+    messagesByRoom: {},
+    activeRoomId: null,
 
-  setActiveRoomId(roomId) {
-    set({ activeRoomId: roomId });
-  },
+    setActiveRoomId(roomId) {
+      set({ activeRoomId: roomId });
+    },
 
-  setRooms(roomsArr) {
-    set({
-      rooms: roomsArr.reduce((acc, room) => ({ ...acc, [room.id]: room }), {}),
-    });
-  },
+    setRooms(roomsArr) {
+      set({
+        rooms: roomsArr.reduce(
+          (acc, room) => ({ ...acc, [room.id]: room }),
+          {},
+        ),
+      });
+    },
 
-  upsertRoom(room) {
-    set(state => ({
-      rooms: { ...state.rooms, [room.id]: room },
-    }));
-  },
+    upsertRoom(room) {
+      set(state => ({
+        rooms: { ...state.rooms, [room.id]: room },
+      }));
+    },
 
-  addMessage(msg) {
-    set(state => {
-      const prevMsgs =
-        (state.messagesByRoom[msg.roomId] as ChatMessage[] | undefined) ?? [];
-      const room = (state.rooms[msg.roomId] as ChatRoom | undefined) ?? null;
-
-      return {
-        // append message to the list of messages in the corresponding room
+    replaceRoomMessages(roomId, messages) {
+      set(state => ({
         messagesByRoom: {
           ...state.messagesByRoom,
-          [msg.roomId]: [...prevMsgs, msg],
+          [roomId]: messages,
         },
+      }));
+    },
 
-        // update lastMsg and lastMsgAt in the corresponding room (if exists)
-        rooms: room
-          ? {
-              ...state.rooms,
-              [msg.roomId]: {
-                ...room,
-                lastMsg: msg,
-                lastMsgAt: msg.createdAt,
-              },
-            }
-          : state.rooms,
-      };
-    });
-  },
+    addMessage(msg) {
+      set(state => {
+        const prevMsgs =
+          (state.messagesByRoom[msg.roomId] as ChatMessage[] | undefined) ?? [];
+        const room = (state.rooms[msg.roomId] as ChatRoom | undefined) ?? null;
 
-  updateMessage(roomId, msgId, patch) {
-    set(state => ({
-      messagesByRoom: {
-        ...state.messagesByRoom,
-        [roomId]: state.messagesByRoom[roomId].map(m =>
-          m.id === msgId ? { ...m, ...patch } : m,
-        ),
-      },
-    }));
-  },
+        return {
+          // append message to the list of messages in the corresponding room
+          messagesByRoom: {
+            ...state.messagesByRoom,
+            [msg.roomId]: [...prevMsgs, msg],
+          },
 
-  removeMessage(roomId, msgId) {
-    set(state => ({
-      messagesByRoom: {
-        ...state.messagesByRoom,
-        [roomId]: state.messagesByRoom[roomId].filter(m => m.id !== msgId),
-      },
-    }));
-  },
-}));
+          // update lastMsg and lastMsgAt in the corresponding room (if exists)
+          rooms: room
+            ? {
+                ...state.rooms,
+                [msg.roomId]: {
+                  ...room,
+                  lastMsg: msg,
+                  lastMsgAt: msg.createdAt,
+                },
+              }
+            : state.rooms,
+        };
+      });
+    },
 
-export function useChatRooms(): ChatRoom[] {
+    updateMessage(roomId, msgId, patch) {
+      set(state => ({
+        messagesByRoom: {
+          ...state.messagesByRoom,
+          [roomId]: state.messagesByRoom[roomId].map(m =>
+            m.id === msgId ? { ...m, ...patch } : m,
+          ),
+        },
+      }));
+    },
+
+    removeMessage(roomId, msgId) {
+      set(state => ({
+        messagesByRoom: {
+          ...state.messagesByRoom,
+          [roomId]: state.messagesByRoom[roomId].filter(m => m.id !== msgId),
+        },
+      }));
+    },
+  })),
+);
+
+function useChatRooms(): ChatRoom[] {
   const roomsRecord = useChatStore(state => state.rooms);
   return Object.values(roomsRecord);
 }
 
-export function useActiveRoom(): ChatRoom | null {
+function useActiveRoom(): ChatRoom | null {
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const rooms = useChatStore(state => state.rooms);
 
@@ -108,7 +125,7 @@ export function useActiveRoom(): ChatRoom | null {
   return activeRoom ?? null;
 }
 
-export function useMessagesInActiveRoom(): ChatMessage[] {
+function useMessagesInActiveRoom(): ChatMessage[] {
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const messagesByRoom = useChatStore(state => state.messagesByRoom);
 
@@ -116,11 +133,34 @@ export function useMessagesInActiveRoom(): ChatMessage[] {
     return [];
   }
 
-  // undefined messages in the active room is a possibility in reality
-  // (eg. room has no messages yet)
+  // undefined messages in the active room is a possibility in reality (eg. room has no messages yet)
   const messagesInActiveRoom = messagesByRoom[activeRoomId] as
     | ChatMessage[]
     | undefined;
 
   return messagesInActiveRoom ?? [];
 }
+
+// subscribe to state.rooms changes and persist rooms to db whenever changes happen
+useChatStore.subscribe(
+  state => state.rooms,
+  roomsRecord => {
+    // turn roomsRecord { roomId -> ChatRoom } into a single array of rooms
+    const rooms = Object.values(roomsRecord);
+    db.replaceAllRooms(rooms);
+  },
+);
+
+// subscribe to state.messagesByRoom changes and persist messages to db whenever changes happen
+// useChatStore.subscribe(
+//   state => state.messagesByRoom,
+//   messagesByRoom => {
+//     // debounce by 1s to avoid overly frequent writes to db.messages table
+//     debounce(() => {
+//       const allMessages = Object.values(messagesByRoom).flat();
+//       db.upsertMessages(allMessages);
+//     }, 1000);
+//   },
+// );
+
+export { useChatStore, useActiveRoom, useMessagesInActiveRoom, useChatRooms };

@@ -1,13 +1,16 @@
+/* eslint-disable no-console */
 import Dexie, { type Table } from 'dexie';
 
 import type { ChatMessage, ChatRoom } from '../types';
+
+const DB_NAME = 'chatify_user_db';
 
 class ChatDB extends Dexie {
   rooms!: Table<ChatRoom>;
   messages!: Table<ChatMessage>;
 
   constructor() {
-    super('chat_db');
+    super(DB_NAME);
 
     this.version(1).stores({
       // index by lastMsgAt for sorting recent rooms
