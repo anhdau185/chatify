@@ -21,7 +21,7 @@ interface ChatMessage {
   senderName: string;
   content?: string;
   imageUrl?: string;
-  reactions?: Record<string, string[]>; // emoji -> userIds[]
+  reactions: Record<string, Array<{ reactorId: number; reactorName: string }>>; // emoji -> user[]
   status: 'sending' | 'sent' | 'failed'; // add 'read' later
   createdAt: number;
 }
