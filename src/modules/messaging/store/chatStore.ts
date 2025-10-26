@@ -108,9 +108,11 @@ const useChatStore = create<ChatState & ChatActions>()(
   })),
 );
 
-function useChatRooms(): ChatRoom[] {
+function useRecentChatRooms(): ChatRoom[] {
   const roomsRecord = useChatStore(state => state.rooms);
-  return Object.values(roomsRecord);
+  const rooms = Object.values(roomsRecord);
+  rooms.sort((a, b) => b.lastMsgAt - a.lastMsgAt); // sort rooms by lastMsgAt DESC
+  return rooms;
 }
 
 function useChatRoomIds(): string[] {
@@ -160,6 +162,6 @@ export {
   useChatStore,
   useActiveRoom,
   useMessagesInActiveRoom,
-  useChatRooms,
+  useRecentChatRooms,
   useChatRoomIds,
 };

@@ -12,13 +12,13 @@ import dayjs from '@shared/lib/dayjs';
 import { abbreviate, getDmChatPartner, getRoomName } from '@shared/lib/utils';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
-import { useChatRooms, useChatStore } from '../store/chatStore';
+import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 
 export default function ChatSidebar() {
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
   const { refetch: fetchRoomsApi, isFetching } = useChatRoomsQuery(userId);
 
-  const rooms = useChatRooms();
+  const rooms = useRecentChatRooms();
   const setRooms = useChatStore(state => state.setRooms);
 
   const activeRoomId = useChatStore(state => state.activeRoomId);
