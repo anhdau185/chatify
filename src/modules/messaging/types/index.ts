@@ -31,8 +31,6 @@ interface WsPayloadJoin {
   senderId: number;
 }
 
-type WsPayloadChat = ChatMessage;
-
 interface WsMessageJoin {
   type: 'join';
   payload: WsPayloadJoin;
@@ -40,18 +38,23 @@ interface WsMessageJoin {
 
 interface WsMessageChat {
   type: 'chat';
-  payload: WsPayloadChat;
+  payload: ChatMessage;
 }
 
-type WsMessage = WsMessageJoin | WsMessageChat;
+interface WsMessageReact {
+  type: 'react';
+  payload: ChatMessage;
+}
+
+type WsMessage = WsMessageJoin | WsMessageChat | WsMessageReact;
 
 export type {
   ChatMessage,
   ChatRoom,
-  WsPayloadJoin,
-  WsPayloadChat,
-  WsMessageJoin,
-  WsMessageChat,
-  WsMessage,
   ChatRoomsResponse,
+  WsMessage,
+  WsMessageChat,
+  WsMessageJoin,
+  WsMessageReact,
+  WsPayloadJoin,
 };

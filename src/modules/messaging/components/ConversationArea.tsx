@@ -7,6 +7,7 @@ import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import { TooltipProvider } from '@components/ui/tooltip';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate, getRoomName } from '@shared/lib/utils';
 import * as db from '../db';
@@ -16,7 +17,8 @@ import {
   useChatStore,
   useMessagesInActiveRoom,
 } from '../store/chatStore';
-import type { ChatMessage } from '../types';
+import type { ChatMessage, WsMessageChat } from '../types';
+import Reactions from './Reactions';
 
 export default function ConversationArea() {
   const [inputMsg, setInputMsg] = useState('');
@@ -32,19 +34,24 @@ export default function ConversationArea() {
     const textMsgContent = inputMsg.trim();
 
     if (textMsgContent) {
-      const wsPayload: ChatMessage = {
+      const payload: ChatMessage = {
         id: uuidv4(),
         roomId: activeRoomId,
         senderId: user.id,
         senderName: user.name,
         content: textMsgContent,
+        reactions: {},
         status: 'sending',
         createdAt: Date.now(),
       };
+      const wsMessage: WsMessageChat = {
+        type: 'chat',
+        payload,
+      };
 
-      wsClient.chat(wsPayload);
-      addMessage(wsPayload);
-      db.upsertSingleMessage(wsPayload);
+      wsClient.dispatch(wsMessage);
+      addMessage(payload);
+      db.upsertSingleMessage(payload);
       setInputMsg(''); // clear input after sending
     }
   };
@@ -90,43 +97,46 @@ export default function ConversationArea() {
 
       {/* Conversation History Area */}
       <div className="flex-1 space-y-4 overflow-y-auto p-6">
-        {messages.map(msg => {
-          const isOwnMsg = msg.senderId === user.id;
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isOwnMsg ? 'justify-end' : 'justify-start'}`}
-            >
+        <TooltipProvider>
+          {messages.map(msg => {
+            const isOwnMsg = msg.senderId === user.id;
+            return (
               <div
-                className={`flex max-w-md gap-2 ${isOwnMsg ? 'flex-row-reverse' : ''}`}
+                key={msg.id}
+                className={`flex ${isOwnMsg ? 'justify-end' : 'justify-start'}`}
               >
-                {!isOwnMsg && (
-                  <Avatar className="mt-auto h-8 w-8">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-xs font-semibold text-white">
-                      {abbreviate(msg.senderName)}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div>
-                  <div
-                    className={`rounded-2xl px-4 py-2 ${
-                      isOwnMsg
-                        ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                        : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm'
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                <div
+                  className={`flex max-w-md gap-2 ${isOwnMsg ? 'flex-row-reverse' : ''}`}
+                >
+                  {!isOwnMsg && (
+                    <Avatar className="mt-auto h-8 w-8">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-xs font-semibold text-white">
+                        {abbreviate(msg.senderName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div>
+                    <div
+                      className={`rounded-2xl px-4 py-2 ${
+                        isOwnMsg
+                          ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                          : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm'
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed">{msg.content}</p>
+                    </div>
+                    <Reactions message={msg} user={user} />
+                    <p
+                      className={`mt-1 px-1 text-xs text-slate-400 ${isOwnMsg ? 'text-right' : ''}`}
+                    >
+                      {dayjs(msg.createdAt).format('HH:mm')}
+                    </p>
                   </div>
-                  <p
-                    className={`mt-1 px-1 text-xs text-slate-400 ${isOwnMsg ? 'text-right' : ''}`}
-                  >
-                    {dayjs(msg.createdAt).format('HH:mm')}
-                  </p>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </TooltipProvider>
       </div>
 
       {/* Chat Input Area */}

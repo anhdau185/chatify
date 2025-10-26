@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash-es';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -87,14 +88,29 @@ const useChatStore = create<ChatState & ChatActions>()(
     },
 
     updateMessage(roomId, msgId, patch) {
-      set(state => ({
-        messagesByRoom: {
-          ...state.messagesByRoom,
-          [roomId]: state.messagesByRoom[roomId].map(m =>
-            m.id === msgId ? { ...m, ...patch } : m,
-          ),
-        },
-      }));
+      set(state => {
+        const existingMsgsInRoom = state.messagesByRoom[roomId] as
+          | ChatMessage[]
+          | undefined;
+
+        if (!existingMsgsInRoom || isEmpty(existingMsgsInRoom)) {
+          return state; // no messages in the room, nothing to update
+        }
+
+        const msgExistsInRoom = existingMsgsInRoom.some(m => m.id === msgId);
+        if (!msgExistsInRoom) {
+          return state; // message with msgId not found in the room, nothing to update
+        }
+
+        return {
+          messagesByRoom: {
+            ...state.messagesByRoom,
+            [roomId]: existingMsgsInRoom.map(m =>
+              m.id === msgId ? { ...m, ...patch } : m,
+            ),
+          },
+        };
+      });
     },
 
     removeMessage(roomId, msgId) {

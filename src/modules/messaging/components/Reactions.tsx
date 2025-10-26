@@ -1,0 +1,109 @@
+import { Smile } from 'lucide-react';
+
+import type { PublicUser } from '@/modules/auth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@components/ui/tooltip';
+import * as db from '../db';
+import { buildReactions } from '../lib/utils';
+import * as wsClient from '../socket';
+import { useChatStore } from '../store/chatStore';
+import type { ChatMessage, WsMessageReact } from '../types';
+
+const AVAILABLE_EMOJIS = ['👍', '❤️', '👏', '😂', '😮', '😢', '😡', '👎'];
+
+export default function Reactions({
+  message,
+  user,
+}: {
+  message: ChatMessage;
+  user: PublicUser;
+}) {
+  const isOwnMsg = message.senderId === user.id;
+  const reactions = message.reactions;
+  const hasReactions = Object.keys(reactions).length > 0;
+  const updateMessage = useChatStore(state => state.updateMessage);
+
+  const handleReact = (emoji: string) => {
+    const payload: ChatMessage = {
+      ...message,
+      reactions: buildReactions(emoji, reactions, user),
+    };
+    const wsMessage: WsMessageReact = {
+      type: 'react',
+      payload,
+    };
+
+    wsClient.dispatch(wsMessage);
+    updateMessage(payload.roomId, payload.id, { reactions: payload.reactions });
+    db.upsertSingleMessage(payload);
+  };
+
+  return (
+    <div
+      className={`mt-2 flex items-center space-x-1 ${isOwnMsg ? 'justify-end' : 'justify-start'}`}
+    >
+      {/* Reactions */}
+      {hasReactions && (
+        <div className="flex flex-wrap gap-1">
+          {Object.entries(reactions).map(([emoji, reactors]) => (
+            <Tooltip key={emoji}>
+              <TooltipTrigger asChild>
+                <button
+                  className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-1.5 py-0.5 transition-all ${
+                    reactors.find(item => item.reactorId === user.id)
+                      ? 'border-2 border-blue-500 bg-blue-100'
+                      : 'border border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                  onClick={() => handleReact(emoji)}
+                >
+                  <span className="text-sm">{emoji}</span>
+                  <span className="text-xs font-medium text-slate-600">
+                    {reactors.length}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {reactors.map(r => (
+                  <p className="text-xs">
+                    {r.reactorId === user.id ? 'You' : r.reactorName}
+                  </p>
+                ))}
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      )}
+
+      {/* Add Reaction Button */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white p-1.5 transition-all hover:border-slate-300">
+            <Smile className="h-4 w-4 text-slate-500" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-auto">
+          <div className="flex gap-1">
+            {AVAILABLE_EMOJIS.map(emoji => (
+              <DropdownMenuItem
+                key={emoji}
+                className="text-lg"
+                onClick={() => handleReact(emoji)}
+              >
+                {emoji}
+              </DropdownMenuItem>
+            ))}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}

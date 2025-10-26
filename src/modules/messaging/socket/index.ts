@@ -1,8 +1,9 @@
 import { endpoint } from '@shared/lib/utils';
 import type {
+  WsMessage,
   WsMessageChat,
   WsMessageJoin,
-  WsPayloadChat,
+  WsMessageReact,
   WsPayloadJoin,
 } from '../types';
 
@@ -10,7 +11,10 @@ let ws: WebSocket;
 let reconnectTimeoutMs = 1000; // 1 second intitially
 
 function connect(
-  onReceive: (data: WsPayloadChat, connection: WebSocket) => void,
+  onReceive: (
+    data: WsMessageChat | WsMessageReact,
+    connection: WebSocket,
+  ) => void,
 ) {
   const wsUrl = endpoint('/messaging/ws', { protocol: 'ws' });
   ws = new WebSocket(wsUrl);
@@ -21,8 +25,8 @@ function connect(
   };
 
   ws.onmessage = event => {
-    const msg = JSON.parse(event.data) as WsMessageChat;
-    onReceive(msg.payload, ws);
+    const msg = JSON.parse(event.data) as WsMessageChat | WsMessageReact;
+    onReceive(msg, ws);
   };
 
   ws.onclose = e => {
@@ -55,15 +59,11 @@ function join(
   }
 }
 
-function chat(
-  payload: WsPayloadChat,
+function dispatch(
+  wsMessage: WsMessage,
   callbacks?: { onError: (error: Error) => void },
 ) {
   try {
-    const wsMessage: WsMessageChat = {
-      type: 'chat',
-      payload,
-    };
     ws.send(JSON.stringify(wsMessage));
     console.log(`message sent over WebSocket:`, wsMessage);
   } catch (err) {
@@ -75,4 +75,4 @@ function disconnect() {
   ws?.close(1000, 'Client closed connection normally');
 }
 
-export { connect, join, chat, isOpen, disconnect };
+export { connect, join, dispatch, isOpen, disconnect };

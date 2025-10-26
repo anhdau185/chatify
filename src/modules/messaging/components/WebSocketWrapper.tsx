@@ -15,12 +15,24 @@ export default function WebSocketWrapper({
   const userId = useAuthStore(state => state.authenticatedUser!.id);
   const roomIds = useChatRoomIds();
   const addMessage = useChatStore(state => state.addMessage);
+  const updateMessage = useChatStore(state => state.updateMessage);
 
   useEffect(() => {
     wsClient.connect(msg => {
       console.log('received a message:', msg);
-      addMessage(msg);
-      db.upsertSingleMessage(msg);
+
+      switch (msg.type) {
+        case 'chat':
+          addMessage(msg.payload);
+          break;
+        case 'react':
+          updateMessage(msg.payload.roomId, msg.payload.id, {
+            reactions: msg.payload.reactions,
+          });
+      }
+
+      // Lastly, update new reactions to db
+      db.upsertSingleMessage(msg.payload);
     });
 
     return () => {
