@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash-es';
 import { MoreVertical, Paperclip, Send, Smile, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/modules/auth';
@@ -21,6 +21,7 @@ import type { ChatMessage, WsMessageChat } from '../types';
 import Reactions from './Reactions';
 
 export default function ConversationArea() {
+  const conversationContainerRef = useRef<HTMLDivElement>(null);
   const [inputMsg, setInputMsg] = useState('');
   const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
 
@@ -29,6 +30,11 @@ export default function ConversationArea() {
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
   const activeRoom = useActiveRoom()!; // so is activeRoom, as a result
   const messages = useMessagesInActiveRoom();
+
+  const scrollToBottom = () => {
+    const element = conversationContainerRef.current;
+    if (element) element.scrollTo({ top: element.scrollHeight });
+  };
 
   const handleSend = () => {
     const textMsgContent = inputMsg.trim();
@@ -70,6 +76,11 @@ export default function ConversationArea() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRoomId]); // only watch for activeRoomId changes to avoid unnecessary effect re-runs when messages change
 
+  // scroll to bottom when a new message gets added to the conversation
+  useEffect(() => {
+    if (messages.length > 0) scrollToBottom();
+  }, [messages.length]);
+
   return (
     <div className="flex flex-1 flex-col">
       {/* Conversation Header */}
@@ -102,7 +113,10 @@ export default function ConversationArea() {
       </div>
 
       {/* Conversation History Area */}
-      <div className="flex-1 space-y-4 overflow-y-auto p-6">
+      <div
+        ref={conversationContainerRef}
+        className="flex-1 space-y-4 overflow-y-auto p-6"
+      >
         <TooltipProvider>
           {messages.map(msg => {
             const isOwnMsg = msg.senderId === user.id;
