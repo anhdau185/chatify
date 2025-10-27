@@ -1,4 +1,5 @@
 import { isEmpty } from 'lodash-es';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -126,9 +127,15 @@ const useChatStore = create<ChatState & ChatActions>()(
 
 function useRecentChatRooms(): ChatRoom[] {
   const roomsRecord = useChatStore(state => state.rooms);
-  const rooms = Object.values(roomsRecord);
-  rooms.sort((a, b) => b.lastMsgAt - a.lastMsgAt); // sort rooms by lastMsgAt DESC
-  return rooms;
+
+  // memoize the expensive sorting so that it only re-calculates when roomsRecord changes
+  const sorted = useMemo(() => {
+    const rooms = Object.values(roomsRecord);
+    rooms.sort((a, b) => b.lastMsgAt - a.lastMsgAt); // sort rooms by lastMsgAt DESC
+    return rooms;
+  }, [roomsRecord]);
+
+  return sorted;
 }
 
 function useChatRoomIds(): string[] {
