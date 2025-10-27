@@ -57,12 +57,18 @@ export default function ConversationArea() {
   };
 
   useEffect(() => {
+    if (!isEmpty(messages)) {
+      return; // messages already loaded for this room, no need to query from db
+    }
+
+    // load messages from IndexedDB
     db.getRoomMessages(activeRoomId).then(messages => {
       if (!isEmpty(messages)) {
         replaceRoomMessages(activeRoomId, messages);
       }
     });
-  }, [activeRoomId]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRoomId]); // only watch for activeRoomId changes to avoid unnecessary effect re-runs when messages change
 
   return (
     <div className="flex flex-1 flex-col">
