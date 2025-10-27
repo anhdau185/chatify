@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
 import { useEffect, useRef } from 'react';
 
@@ -54,10 +55,16 @@ export default function ConversationHistory() {
           return (
             <div
               key={msg.id}
-              className={`flex ${isOwnMsg ? 'justify-end' : 'justify-start'}`}
+              className={clsx([
+                'flex',
+                isOwnMsg ? 'justify-end' : 'justify-start',
+              ])}
             >
               <div
-                className={`flex max-w-md gap-2 ${isOwnMsg ? 'flex-row-reverse' : ''}`}
+                className={clsx([
+                  'flex max-w-md gap-2',
+                  isOwnMsg && 'flex-row-reverse',
+                ])}
               >
                 {!isOwnMsg && (
                   <Avatar className="mt-auto h-8 w-8">
@@ -68,17 +75,21 @@ export default function ConversationHistory() {
                 )}
                 <div>
                   <div
-                    className={`rounded-2xl px-4 py-2 ${
+                    className={clsx([
+                      'rounded-2xl px-4 py-2',
                       isOwnMsg
                         ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                        : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm'
-                    }`}
+                        : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm',
+                    ])}
                   >
                     <p className="text-sm leading-relaxed">{msg.content}</p>
                   </div>
                   <Reactions message={msg} user={user} />
                   <p
-                    className={`mt-1 px-1 text-xs text-slate-400 ${isOwnMsg ? 'text-right' : ''}`}
+                    className={clsx([
+                      'mt-1 px-1 text-xs text-slate-400',
+                      isOwnMsg && 'text-right',
+                    ])}
                   >
                     {dayjs(msg.createdAt).format('HH:mm')}
                   </p>

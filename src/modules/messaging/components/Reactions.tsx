@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { Smile } from 'lucide-react';
 
 import type { PublicUser } from '@/modules/auth';
@@ -49,7 +50,10 @@ export default function Reactions({
 
   return (
     <div
-      className={`mt-2 flex items-center space-x-1 ${isOwnMsg ? 'justify-end' : 'justify-start'}`}
+      className={clsx([
+        'mt-2 flex items-center space-x-1',
+        isOwnMsg ? 'justify-end' : 'justify-start',
+      ])}
     >
       {/* Reactions */}
       {hasReactions && (
@@ -58,11 +62,12 @@ export default function Reactions({
             <Tooltip key={emoji}>
               <TooltipTrigger asChild>
                 <button
-                  className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-1.5 py-0.5 transition-all ${
-                    reactors.find(item => item.reactorId === user.id)
+                  className={clsx([
+                    'inline-flex cursor-pointer items-center gap-1 rounded-full px-1.5 py-0.5 transition-all',
+                    reactors.some(r => r.reactorId === user.id)
                       ? 'border-2 border-blue-500 bg-blue-100'
-                      : 'border border-slate-200 bg-white hover:border-slate-300'
-                  }`}
+                      : 'border border-slate-200 bg-white hover:border-slate-300',
+                  ])}
                   onClick={() => handleReact(emoji)}
                 >
                   <span className="text-sm">{emoji}</span>

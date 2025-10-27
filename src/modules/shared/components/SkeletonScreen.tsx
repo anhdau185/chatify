@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import { Skeleton } from '@components/ui/skeleton';
 
 export default function SkeletonScreen() {
@@ -40,17 +42,27 @@ export default function SkeletonScreen() {
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div
               key={i}
-              className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}
+              className={clsx([
+                'flex',
+                i % 2 === 0 ? 'justify-end' : 'justify-start',
+              ])}
             >
               <div
-                className={`flex gap-2 ${i % 2 === 0 ? 'flex-row-reverse' : ''}`}
+                className={clsx([
+                  'flex gap-2',
+                  i % 2 === 0 && 'flex-row-reverse',
+                ])}
               >
                 {i % 2 !== 0 && (
                   <Skeleton className="h-8 w-8 flex-shrink-0 rounded-full" />
                 )}
                 <div>
                   <Skeleton
-                    className={`h-16 ${i % 2 === 0 ? 'w-72' : 'w-56'} rounded-2xl`}
+                    className={clsx([
+                      'h-16',
+                      i % 2 === 0 ? 'w-72' : 'w-56',
+                      'rounded-2xl',
+                    ])}
                   />
                 </div>
               </div>

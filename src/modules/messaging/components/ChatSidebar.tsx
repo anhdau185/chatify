@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
 import { Search, Sidebar, Users } from 'lucide-react';
 import { useEffect } from 'react';
@@ -86,11 +87,12 @@ export default function ChatSidebar() {
           return (
             <div
               key={room.id}
-              className={`flex cursor-pointer items-center gap-3 p-4 transition-colors ${
+              className={clsx([
+                'flex cursor-pointer items-center gap-3 p-4 transition-colors',
                 isRoomSelected
                   ? 'border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50'
-                  : 'hover:bg-slate-50'
-              }`}
+                  : 'hover:bg-slate-50',
+              ])}
               onClick={() => setActiveRoomId(room.id)}
             >
               <div className="relative">
