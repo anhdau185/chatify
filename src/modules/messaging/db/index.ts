@@ -23,9 +23,19 @@ class ChatDB extends Dexie {
 
 const db = new ChatDB();
 
-async function getRecentRooms(): Promise<ChatRoom[]> {
+async function getRecentRooms(userId: number): Promise<ChatRoom[]> {
   try {
-    return db.rooms.orderBy('lastMsgAt').reverse().toArray();
+    const allRecentRooms = await db.rooms
+      .orderBy('lastMsgAt')
+      .reverse()
+      .toArray();
+
+    // filter only rooms that involve the given userId
+    const userRooms = allRecentRooms.filter(room =>
+      room.members.some(member => member.id === userId),
+    );
+
+    return userRooms;
   } catch (err) {
     console.error('Failed to get recent rooms:', err);
     return [];

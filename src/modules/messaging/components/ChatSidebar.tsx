@@ -25,14 +25,14 @@ export default function ChatSidebar() {
   const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
 
   useEffect(() => {
-    db.getRecentRooms().then(rooms => {
+    db.getRecentRooms(userId).then(rooms => {
       if (!isEmpty(rooms)) {
         setRooms(rooms);
       } else {
         fetchRoomsApi();
       }
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // if none is selected, select and show the last active room by default
   useEffect(() => {
