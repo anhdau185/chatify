@@ -20,7 +20,7 @@ interface ChatMessage {
   senderId: number;
   senderName: string;
   content?: string;
-  imageUrl?: string;
+  imageURLs?: string[];
   reactions: Record<string, Array<{ reactorId: number; reactorName: string }>>; // emoji -> user[]
   status: 'sending' | 'sent' | 'failed'; // add 'read' later
   createdAt: number;
