@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAuthStore } from '@/modules/auth';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
+import { EXAMPLE_PHOTO_URL } from '@shared/constants';
 import * as db from '../db';
 import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
@@ -22,13 +23,14 @@ export default function ConversationInputSection() {
   const handleSend = () => {
     const textMsgContent = inputMsg.trim();
 
-    if (textMsgContent) {
+    if (textMsgContent || selectedFiles.length > 0) {
       const payload: ChatMessage = {
         id: uuidv4(),
         roomId: activeRoomId,
         senderId: user.id,
         senderName: user.name,
         content: textMsgContent,
+        imageURLs: selectedFiles.map(() => EXAMPLE_PHOTO_URL), // TODO: implement photo upload flow and get actual photo URLs
         reactions: {},
         status: 'sending',
         createdAt: Date.now(),
