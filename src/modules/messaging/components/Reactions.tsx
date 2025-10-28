@@ -100,7 +100,7 @@ export default function Reactions({
             {AVAILABLE_EMOJIS.map(emoji => (
               <DropdownMenuItem
                 key={emoji}
-                className="text-lg"
+                className="px-2 py-1 text-lg"
                 onClick={() => handleReact(emoji)}
               >
                 {emoji}
