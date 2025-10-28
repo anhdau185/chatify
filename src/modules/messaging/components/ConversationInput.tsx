@@ -11,7 +11,7 @@ import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
 import type { ChatMessage, WsMessageChat } from '../types';
 
-export default function ConversationInputSection() {
+export default function ConversationInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [inputMsg, setInputMsg] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);

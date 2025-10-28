@@ -1,7 +1,7 @@
 import { useChatStore } from '../store/chatStore';
 import ConversationHeader from './ConversationHeader';
 import ConversationHistory from './ConversationHistory';
-import ConversationInputSection from './ConversationInputSection';
+import ConversationInput from './ConversationInput';
 
 export default function ConversationArea() {
   const activeRoomId = useChatStore(state => state.activeRoomId);
@@ -14,7 +14,7 @@ export default function ConversationArea() {
     <div className="flex flex-1 flex-col">
       <ConversationHeader />
       <ConversationHistory />
-      <ConversationInputSection />
+      <ConversationInput />
     </div>
   );
 }
