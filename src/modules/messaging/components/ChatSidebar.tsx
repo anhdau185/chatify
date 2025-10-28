@@ -13,6 +13,7 @@ import dayjs from '@shared/lib/dayjs';
 import { abbreviate, getDmChatPartner, getRoomName } from '@shared/lib/utils';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
+import { getRoomLatestActivity } from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 
 export default function ChatSidebar() {
@@ -123,7 +124,10 @@ export default function ChatSidebar() {
                   )}
                 </div>
                 <p className="truncate text-sm text-slate-400">
-                  {room.lastMsg ? room.lastMsg.content : 'No messages yet'}
+                  {getRoomLatestActivity(
+                    room.lastMsg,
+                    room.lastMsg?.senderId === userId,
+                  )}
                 </p>
               </div>
 

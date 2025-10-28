@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isEmpty } from 'lodash-es';
 
 import type { PublicUser } from '@/modules/auth';
 import type { ChatMessage } from '../types';
@@ -41,4 +41,24 @@ function buildReactions(
   return updatedReactions;
 }
 
-export { buildReactions };
+function getRoomLatestActivity(
+  lastMsg: ChatMessage | undefined,
+  isOwnMsg: boolean,
+) {
+  if (!lastMsg) {
+    return 'No messages yet';
+  }
+
+  if (lastMsg.content) {
+    return lastMsg.content;
+  }
+
+  if (lastMsg.imageURLs && !isEmpty(lastMsg.imageURLs)) {
+    const verb = isOwnMsg ? 'Sent' : 'Received';
+    return `${verb} ${lastMsg.imageURLs.length} photo(s)`;
+  }
+
+  return 'Sent an attachment';
+}
+
+export { buildReactions, getRoomLatestActivity };

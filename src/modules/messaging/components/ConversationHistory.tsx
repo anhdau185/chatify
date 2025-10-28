@@ -9,6 +9,7 @@ import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as db from '../db';
 import { useChatStore, useMessagesInActiveRoom } from '../store/chatStore';
+import MessagePhotosGrid from './MessagePhotosGrid';
 import Reactions from './Reactions';
 
 export default function ConversationHistory() {
@@ -74,17 +75,28 @@ export default function ConversationHistory() {
                   </Avatar>
                 )}
                 <div>
-                  <div
-                    className={clsx([
-                      'rounded-2xl px-4 py-2',
-                      isOwnMsg
-                        ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                        : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm',
-                    ])}
-                  >
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                  </div>
+                  {/* Photo Grid */}
+                  {msg.imageURLs && !isEmpty(msg.imageURLs) && (
+                    <MessagePhotosGrid imageURLs={msg.imageURLs} />
+                  )}
+
+                  {/* Text Content */}
+                  {msg.content && (
+                    <div
+                      className={clsx([
+                        'rounded-2xl px-4 py-2',
+                        isOwnMsg
+                          ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                          : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm',
+                      ])}
+                    >
+                      <p className="text-sm leading-relaxed">{msg.content}</p>
+                    </div>
+                  )}
+
+                  {/* Message Reactions */}
                   <Reactions message={msg} user={user} />
+
                   <p
                     className={clsx([
                       'mt-1 px-1 text-xs text-slate-400',

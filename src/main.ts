@@ -37,7 +37,7 @@ const createWindow = (username: string = 'chatify1') => {
               "default-src 'self'; " +
                 "script-src 'self' 'unsafe-eval'; " +
                 "style-src 'self' 'unsafe-inline'; " +
-                "img-src 'self' data:; " +
+                'img-src * blob: data:; ' +
                 "font-src 'self' data:; " +
                 "connect-src 'self' http://localhost:8080 ws://localhost:8080/messaging/ws;",
             ],
@@ -74,7 +74,7 @@ const createWindow = (username: string = 'chatify1') => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  // createWindow('chatify1'); // Client 1
+  createWindow('chatify1'); // Client 1
   createWindow('chatify2'); // Client 2
 });
 
