@@ -43,7 +43,9 @@ export default function ConversationInput() {
       wsClient.dispatch(wsMessage);
       addMessage(payload);
       db.upsertSingleMessage(payload);
+
       setInputMsg(''); // clear input after sending
+      setSelectedFiles([]); // clear selected files after sending
     }
   };
 
@@ -51,7 +53,7 @@ export default function ConversationInput() {
     <div className="border-t border-slate-200 bg-white p-4">
       {/* Preview of Chosen Files */}
       {selectedFiles.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           {selectedFiles.map((file, idx) => (
             <div
               key={idx}
@@ -74,7 +76,7 @@ export default function ConversationInput() {
         </div>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         {/* File Picker */}
         <Input
           multiple
@@ -97,7 +99,7 @@ export default function ConversationInput() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-slate-500 hover:text-slate-700"
+          className="h-8 w-8 text-slate-500 hover:text-slate-700"
           onClick={() => fileInputRef.current?.click()}
         >
           <Paperclip className="h-5 w-5" />
