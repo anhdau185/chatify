@@ -1,4 +1,4 @@
-import { Image as ImageIcon, Paperclip, Send, Smile, X } from 'lucide-react';
+import { Image as ImageIcon, Send, Smile, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,6 +10,7 @@ import * as db from '../db';
 import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
 import type { ChatMessage, WsMessageChat } from '../types';
+import PhotoThumbnail from './PhotoThumbnail';
 
 export default function ConversationInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,7 +60,7 @@ export default function ConversationInput() {
               key={idx}
               className="group relative flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 p-2"
             >
-              <ImageIcon className="h-4 w-4 text-slate-500" />
+              <PhotoThumbnail file={file} />
               <span className="max-w-[150px] truncate text-xs text-slate-600">
                 {file.name}
               </span>
@@ -102,7 +103,7 @@ export default function ConversationInput() {
           className="h-8 w-8 text-slate-500 hover:text-slate-700"
           onClick={() => fileInputRef.current?.click()}
         >
-          <Paperclip className="h-5 w-5" />
+          <ImageIcon className="h-5 w-5" />
         </Button>
 
         {/* Text Input */}
