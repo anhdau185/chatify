@@ -78,7 +78,7 @@ export default function Reactions({
               </TooltipTrigger>
               <TooltipContent>
                 {reactors.map(r => (
-                  <p className="text-xs">
+                  <p key={r.reactorId} className="text-xs">
                     {r.reactorId === user.id ? 'You' : r.reactorName}
                   </p>
                 ))}
