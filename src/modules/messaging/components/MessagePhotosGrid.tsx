@@ -36,7 +36,7 @@ export default function MessagePhotosGrid({
                   <img
                     src={url}
                     alt={`Image ${idx + 1}`}
-                    className="h-full w-full cursor-pointer object-cover transition-opacity hover:opacity-90"
+                    className="h-full w-full cursor-pointer object-cover transition-all hover:brightness-95"
                   />
                 </div>
               </DialogTrigger>
