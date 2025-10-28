@@ -52,7 +52,7 @@ const createWindow = (username: string = 'chatify1') => {
               "default-src 'self'; " +
                 "script-src 'self'; " +
                 "style-src 'self' 'unsafe-inline'; " +
-                "img-src 'self' data:; " +
+                'img-src * blob: data:; ' +
                 "font-src 'self' data:; " +
                 "connect-src 'self' https://api.chatify.com;",
             ],
