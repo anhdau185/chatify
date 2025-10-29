@@ -15,7 +15,7 @@ function FailedPhotoPlaceholder() {
   );
 }
 
-export default function MessagePhotosGrid({
+export default function PhotosGrid({
   imageURLs,
   isMsgFailed = false,
 }: {

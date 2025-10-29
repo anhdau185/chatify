@@ -9,7 +9,7 @@ import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as db from '../db';
 import { useChatStore, useMessagesInActiveRoom } from '../store/chatStore';
-import MessagePhotosGrid from './MessagePhotosGrid';
+import PhotosGrid from './PhotosGrid';
 import PhotosGridPlaceholder from './PhotosGridPlaceholder';
 import Reactions from './Reactions';
 
@@ -85,7 +85,7 @@ export default function ConversationHistory() {
 
                   {/* Photo Grid */}
                   {msg.imageURLs && !isEmpty(msg.imageURLs) && (
-                    <MessagePhotosGrid
+                    <PhotosGrid
                       imageURLs={msg.imageURLs}
                       isMsgFailed={msg.status === 'failed'}
                     />
