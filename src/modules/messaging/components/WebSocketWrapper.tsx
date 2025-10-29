@@ -19,7 +19,7 @@ export default function WebSocketWrapper({
 
   useEffect(() => {
     wsClient.connect(msg => {
-      console.log('received a message:', msg);
+      console.log('Received a message:', msg);
 
       switch (msg.type) {
         case 'chat':
@@ -29,9 +29,12 @@ export default function WebSocketWrapper({
           updateMessage(msg.payload.roomId, msg.payload.id, {
             reactions: msg.payload.reactions,
           });
+          break;
+        default:
+          console.warn('Received message is of unknown type:', msg);
       }
 
-      // Lastly, update new reactions to db
+      // Lastly, update new payload to db
       db.upsertSingleMessage(msg.payload);
     });
 

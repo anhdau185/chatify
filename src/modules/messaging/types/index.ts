@@ -23,7 +23,7 @@ interface ChatMessage {
   imageURLs?: Array<string | null>; // null for failed uploads
   pendingUploads?: number; // number of files being uploaded
   reactions: Record<string, Array<{ reactorId: number; reactorName: string }>>; // emoji -> user[]
-  status: 'sending' | 'sent' | 'failed'; // add 'read' later
+  status: 'pending' | 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
   createdAt: number;
 }
 
