@@ -1,21 +1,16 @@
 import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 import { endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
-import type { UploadResponse } from '../types';
+import type { UploadMultipleResponse } from '../types';
 
-function useUploadSingleFile({
-  onSuccess,
-}: {
-  onSuccess: (res: UploadResponse) => void;
-}) {
+function useUploadMultiple() {
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (files: File[]) => {
       const formData = new FormData();
-      formData.append('file', file);
+      files.forEach(file => formData.append('files', file));
 
-      const res = await fetch(endpoint('/media/upload'), {
+      const res = await fetch(endpoint('/media/upload/multiple'), {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -27,15 +22,9 @@ function useUploadSingleFile({
         throw new Error(errorMsg || 'Something went wrong on our end :(');
       }
 
-      return res.json() as Promise<UploadResponse>;
+      return res.json() as Promise<UploadMultipleResponse>;
     },
-
-    onError({ message }) {
-      toast.error(message);
-    },
-
-    onSuccess,
   });
 }
 
-export { useUploadSingleFile };
+export { useUploadMultiple };

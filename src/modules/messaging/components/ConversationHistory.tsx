@@ -10,6 +10,7 @@ import { abbreviate } from '@shared/lib/utils';
 import * as db from '../db';
 import { useChatStore, useMessagesInActiveRoom } from '../store/chatStore';
 import MessagePhotosGrid from './MessagePhotosGrid';
+import PhotosGridPlaceholder from './PhotosGridPlaceholder';
 import Reactions from './Reactions';
 
 export default function ConversationHistory() {
@@ -75,9 +76,19 @@ export default function ConversationHistory() {
                   </Avatar>
                 )}
                 <div>
+                  {/* Placeholder Photo Grid for Uploads in Progress */}
+                  {msg.pendingUploads && msg.pendingUploads > 0 && (
+                    <PhotosGridPlaceholder
+                      pendingUploads={msg.pendingUploads}
+                    />
+                  )}
+
                   {/* Photo Grid */}
                   {msg.imageURLs && !isEmpty(msg.imageURLs) && (
-                    <MessagePhotosGrid imageURLs={msg.imageURLs} />
+                    <MessagePhotosGrid
+                      imageURLs={msg.imageURLs}
+                      isMsgFailed={msg.status === 'failed'}
+                    />
                   )}
 
                   {/* Text Content */}
@@ -95,7 +106,9 @@ export default function ConversationHistory() {
                   )}
 
                   {/* Message Reactions */}
-                  <Reactions message={msg} user={user} />
+                  {(!msg.pendingUploads || msg.status === 'failed') && (
+                    <Reactions message={msg} user={user} />
+                  )}
 
                   <p
                     className={clsx([

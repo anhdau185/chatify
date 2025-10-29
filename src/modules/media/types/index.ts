@@ -1,11 +1,27 @@
-interface UploadResponse {
-  success: boolean;
-  data: {
-    fileUrl: string;
-    filename: string;
-    mimeType: string;
-    size: number;
-  };
+interface UploadMultipleResponse {
+  totalFiles: number;
+  successful: number;
+  failed: number;
+  results: Array<
+    | {
+        success: true;
+        data: {
+          fileUrl: string;
+          originalFilename: string;
+          storedFilename: string;
+          mimeType: string;
+          encoding: string;
+        };
+      }
+    | {
+        success: false;
+        data: {
+          filename: string;
+          errors: string[];
+        };
+      }
+  >;
+  uploadTime: number;
 }
 
-export type { UploadResponse };
+export type { UploadMultipleResponse };

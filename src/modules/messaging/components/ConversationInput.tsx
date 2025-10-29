@@ -1,15 +1,17 @@
+import { isEmpty } from 'lodash-es';
 import { Image as ImageIcon, Send, Smile, X } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAuthStore } from '@/modules/auth';
+import { useUploadMultiple } from '@/modules/media';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
-import { EXAMPLE_PHOTO_URL } from '@shared/constants';
 import * as db from '../db';
 import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
-import type { ChatMessage, WsMessageChat } from '../types';
+import type { ChatMessage } from '../types';
 import PhotoThumbnail from './PhotoThumbnail';
 
 export default function ConversationInput() {
@@ -19,34 +21,104 @@ export default function ConversationInput() {
 
   const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
   const addMessage = useChatStore(state => state.addMessage);
+  const updateMessage = useChatStore(state => state.updateMessage);
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
+  const { mutateAsync: uploadMultiple } = useUploadMultiple();
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const textMsgContent = inputMsg.trim();
 
-    if (textMsgContent || selectedFiles.length > 0) {
+    // nothing to send
+    if (!textMsgContent && isEmpty(selectedFiles)) {
+      return;
+    }
+
+    // text-only message
+    if (textMsgContent && isEmpty(selectedFiles)) {
       const payload: ChatMessage = {
         id: uuidv4(),
         roomId: activeRoomId,
         senderId: user.id,
         senderName: user.name,
         content: textMsgContent,
-        imageURLs: selectedFiles.map(() => EXAMPLE_PHOTO_URL), // TODO: implement photo upload flow and get actual photo URLs
         reactions: {},
         status: 'sending',
         createdAt: Date.now(),
       };
-      const wsMessage: WsMessageChat = {
+
+      wsClient.dispatch({
         type: 'chat',
         payload,
-      };
-
-      wsClient.dispatch(wsMessage);
+      });
       addMessage(payload);
       db.upsertSingleMessage(payload);
-
       setInputMsg(''); // clear input after sending
-      setSelectedFiles([]); // clear selected files after sending
+      return;
+    }
+
+    // message with photos
+    const placeholderMsg: ChatMessage = {
+      id: uuidv4(),
+      roomId: activeRoomId,
+      senderId: user.id,
+      senderName: user.name,
+      content: textMsgContent,
+      pendingUploads: selectedFiles.length,
+      reactions: {},
+      status: 'sending',
+      createdAt: Date.now(),
+    };
+
+    addMessage(placeholderMsg);
+    setInputMsg(''); // clear input after sending
+    setSelectedFiles([]); // clear selected files after sending
+
+    try {
+      const uploadResult = await uploadMultiple(selectedFiles);
+      const allUploads = uploadResult.results.map(item =>
+        item.success ? item.data.fileUrl : null,
+      );
+      const successfulUploads = allUploads.filter(
+        url => url != null,
+      ) as string[];
+
+      const senderPayload: ChatMessage = {
+        ...placeholderMsg,
+        pendingUploads: undefined,
+        imageURLs: allUploads,
+      };
+      const receiverPayload: ChatMessage = {
+        ...senderPayload,
+        imageURLs: successfulUploads,
+      };
+
+      wsClient.dispatch({
+        type: 'chat',
+        payload: receiverPayload, // send msg with only successful uploads to other chat participants
+      });
+      updateMessage(senderPayload.roomId, senderPayload.id, senderPayload);
+      db.upsertSingleMessage(senderPayload);
+
+      // eslint-disable-next-line no-console
+      console.log(
+        'Successful photo message sent:',
+        senderPayload,
+        receiverPayload,
+      );
+    } catch (err) {
+      console.error('Failed to upload files:', err); // eslint-disable-line no-console
+      toast.error(`Failed to upload photos. ${(err as Error).message}`);
+
+      // mark the photo message as failed and not sending it to other chat participants
+      // but still update the message status locally
+      const senderPayload: ChatMessage = {
+        ...placeholderMsg,
+        pendingUploads: undefined,
+        imageURLs: Array.from({ length: selectedFiles.length }, () => null), // all uploads failed
+        status: 'failed',
+      };
+      updateMessage(senderPayload.roomId, senderPayload.id, senderPayload);
+      db.upsertSingleMessage(senderPayload);
     }
   };
 

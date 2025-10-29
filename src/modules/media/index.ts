@@ -1,1 +1,1 @@
-export { useUploadSingleFile } from './api/mutations';
+export { useUploadMultiple } from './api/mutations';
