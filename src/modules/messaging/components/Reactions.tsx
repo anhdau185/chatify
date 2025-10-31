@@ -35,14 +35,20 @@ export default function Reactions({
   const enqueue = useMessageQueueStore(state => state.enqueue);
 
   const handleReact = (emoji: string) => {
-    const payload: ChatMessage = {
-      ...message,
-      reactions: buildReactions(emoji, reactions, user),
+    const reactor = { reactorId: user.id, reactorName: user.name };
+    const rebuiltReactions = buildReactions(emoji, reactions, reactor);
+    const wsMessage: WsMessageReact = {
+      type: 'react',
+      payload: {
+        id: message.id,
+        roomId: message.roomId,
+        emoji,
+        reactor,
+      },
     };
-    const wsMessage: WsMessageReact = { type: 'react', payload };
 
-    updateMessage(payload.roomId, payload.id, { reactions: payload.reactions });
-    db.patchMessage(payload.id, { reactions: payload.reactions });
+    updateMessage(message.roomId, message.id, { reactions: rebuiltReactions });
+    db.patchMessage(message.id, { reactions: rebuiltReactions });
     enqueue(wsMessage);
   };
 

@@ -5,6 +5,7 @@ import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
 import { useMessageQueueStore } from '../store/messageQueueStore';
 import type { WsMessageComms } from '../types';
+import { buildReactions, getMessage } from './utils';
 
 type MessageProcessor = {
   intervalId: number | null;
@@ -101,7 +102,8 @@ async function processMessageQueue() {
 
           // 3. Further failure handling based on message type
           switch (wsMessageToSend.type) {
-            case 'chat': // For "chat" message only: Update status to "failed" (UI and DB)
+            case 'chat': {
+              // For "chat" message: Update status to "failed" (UI and DB)
               useChatStore
                 .getState()
                 .updateMessage(
@@ -111,14 +113,43 @@ async function processMessageQueue() {
                 );
               db.patchMessage(wsMessageToSend.payload.id, { status: 'failed' });
               break;
+            }
 
-            case 'react': // For "react" message only: Notify user of failure
+            case 'react': {
+              // For "react" message:
+              // 1. Notify user of failure
               toast.error('Failed to send reaction. Please try again.');
-              // TODO: Revert the reaction from UI and DB
-              break;
 
-            default:
+              // 2. Revert the optimistic reaction update earlier (UI and DB)
+              const message = getMessage(
+                wsMessageToSend.payload.roomId,
+                wsMessageToSend.payload.id,
+              );
+
+              if (!message) break;
+
+              const revertedReactions = buildReactions(
+                wsMessageToSend.payload.emoji,
+                message.reactions,
+                wsMessageToSend.payload.reactor,
+              );
+
+              useChatStore
+                .getState()
+                .updateMessage(
+                  wsMessageToSend.payload.roomId,
+                  wsMessageToSend.payload.id,
+                  { reactions: revertedReactions },
+                );
+              db.patchMessage(wsMessageToSend.payload.id, {
+                reactions: revertedReactions,
+              });
               break;
+            }
+
+            default: {
+              break;
+            }
           }
         }
       }

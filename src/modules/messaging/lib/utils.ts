@@ -1,19 +1,19 @@
 import { cloneDeep, isEmpty } from 'lodash-es';
 
-import type { PublicUser } from '@/modules/auth';
+import { useChatStore } from '../store/chatStore';
 import type { ChatMessage } from '../types';
 
 function buildReactions(
   emoji: string,
   reactions: ChatMessage['reactions'],
-  user: PublicUser,
+  reactor: { reactorId: number; reactorName: string },
 ) {
   const updatedReactions = cloneDeep(reactions);
 
   // Remove user from any existing reactions
   Object.keys(updatedReactions).forEach(existingEmoji => {
     updatedReactions[existingEmoji] = updatedReactions[existingEmoji].filter(
-      ({ reactorId }) => reactorId !== user.id,
+      ({ reactorId }) => reactorId !== reactor.reactorId,
     );
 
     // Clean up empty reaction arrays
@@ -24,7 +24,9 @@ function buildReactions(
 
   // Check if user is toggling off their reaction
   const reactors = reactions[emoji] || [];
-  const isUserRepeatingThisEmoji = reactors.some(r => r.reactorId === user.id);
+  const isUserRepeatingThisEmoji = reactors.some(
+    ({ reactorId }) => reactorId === reactor.reactorId,
+  );
 
   // If user wasn't reacting with this emoji, add their reaction
   if (!isUserRepeatingThisEmoji) {
@@ -32,10 +34,7 @@ function buildReactions(
       updatedReactions[emoji] = [];
     }
 
-    updatedReactions[emoji].push({
-      reactorId: user.id,
-      reactorName: user.name,
-    });
+    updatedReactions[emoji].push(reactor);
   }
 
   return updatedReactions;
@@ -61,4 +60,21 @@ function getRoomLatestActivity(
   return 'Sent an attachment';
 }
 
-export { buildReactions, getRoomLatestActivity };
+function getMessage(roomId: string, msgId: string): ChatMessage | null {
+  const messagesByRoom = useChatStore.getState().messagesByRoom;
+  const messages = messagesByRoom[roomId] || [];
+
+  if (isEmpty(messages)) {
+    return null;
+  }
+
+  const message = messages.find(m => m.id === msgId);
+
+  if (!message) {
+    return null;
+  }
+
+  return message;
+}
+
+export { buildReactions, getRoomLatestActivity, getMessage };
