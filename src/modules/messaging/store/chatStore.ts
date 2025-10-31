@@ -64,13 +64,17 @@ const useChatStore = create<ChatState & ChatActions>()(
       set(state => {
         const prevMsgs =
           (state.messagesByRoom[msg.roomId] as ChatMessage[] | undefined) ?? [];
+        const newMsgs = [...prevMsgs, msg].sort(
+          (a, b) => a.createdAt - b.createdAt,
+        );
+
         const room = (state.rooms[msg.roomId] as ChatRoom | undefined) ?? null;
 
         return {
           // append message to the list of messages in the corresponding room
           messagesByRoom: {
             ...state.messagesByRoom,
-            [msg.roomId]: [...prevMsgs, msg],
+            [msg.roomId]: newMsgs,
           },
 
           // update lastMsg and lastMsgAt in the corresponding room (if exists)
@@ -145,13 +149,13 @@ function useChatRoomIds(): string[] {
 
 function useActiveRoom(): ChatRoom | null {
   const activeRoomId = useChatStore(state => state.activeRoomId);
-  const rooms = useChatStore(state => state.rooms);
+  const roomsRecord = useChatStore(state => state.rooms);
 
   if (!activeRoomId) {
     return null;
   }
 
-  const activeRoom = rooms[activeRoomId] as ChatRoom | undefined;
+  const activeRoom = roomsRecord[activeRoomId] as ChatRoom | undefined;
   return activeRoom ?? null;
 }
 

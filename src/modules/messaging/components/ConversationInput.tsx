@@ -9,9 +9,9 @@ import { useUploadMultiple } from '@/modules/media';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import * as db from '../db';
-import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
-import type { ChatMessage } from '../types';
+import { useMessageQueueStore } from '../store/messageQueueStore';
+import type { ChatMessage, WsMessageChat } from '../types';
 import PhotoThumbnail from './PhotoThumbnail';
 
 export default function ConversationInput() {
@@ -23,53 +23,42 @@ export default function ConversationInput() {
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
+  const enqueue = useMessageQueueStore(state => state.enqueue);
   const { mutateAsync: uploadMultiple } = useUploadMultiple();
 
-  const handleSend = async () => {
-    const textMsgContent = inputMsg.trim();
+  const handleSendTextOnlyMsg = () => {
+    const payload: ChatMessage = {
+      id: uuidv4(),
+      roomId: activeRoomId,
+      senderId: user.id,
+      senderName: user.name,
+      content: inputMsg.trim() || undefined,
+      reactions: {},
+      status: 'pending',
+      createdAt: Date.now(),
+    };
+    const wsMessage: WsMessageChat = { type: 'chat', payload };
 
-    // nothing to send
-    if (!textMsgContent && isEmpty(selectedFiles)) {
-      return;
-    }
+    addMessage(payload);
+    db.upsertSingleMessage(payload);
+    enqueue(wsMessage);
+    setInputMsg(''); // clear input after sending
+  };
 
-    // text-only message
-    if (textMsgContent && isEmpty(selectedFiles)) {
-      const payload: ChatMessage = {
-        id: uuidv4(),
-        roomId: activeRoomId,
-        senderId: user.id,
-        senderName: user.name,
-        content: textMsgContent,
-        reactions: {},
-        status: 'sending',
-        createdAt: Date.now(),
-      };
-
-      wsClient.dispatch({
-        type: 'chat',
-        payload,
-      });
-      addMessage(payload);
-      db.upsertSingleMessage(payload);
-      setInputMsg(''); // clear input after sending
-      return;
-    }
-
-    // message with photos
+  const handleSendMsgWithPhotos = async () => {
     const placeholderMsg: ChatMessage = {
       id: uuidv4(),
       roomId: activeRoomId,
       senderId: user.id,
       senderName: user.name,
-      content: textMsgContent,
+      content: inputMsg.trim() || undefined,
       pendingUploads: selectedFiles.length,
       reactions: {},
-      status: 'sending',
+      status: 'pending',
       createdAt: Date.now(),
     };
 
-    addMessage(placeholderMsg);
+    addMessage(placeholderMsg); // render immediately to user with photos placeholder
     setInputMsg(''); // clear input after sending
     setSelectedFiles([]); // clear selected files after sending
 
@@ -85,31 +74,28 @@ export default function ConversationInput() {
       const senderPayload: ChatMessage = {
         ...placeholderMsg,
         pendingUploads: undefined,
-        imageURLs: allUploads,
+        imageURLs: allUploads, // show all photos (including failed ones) to sender
       };
       const receiverPayload: ChatMessage = {
         ...senderPayload,
-        imageURLs: successfulUploads,
+        imageURLs: successfulUploads, // only show successful photos to other participants
+      };
+      const wsMessage: WsMessageChat = {
+        type: 'chat',
+        payload: receiverPayload,
       };
 
-      wsClient.dispatch({
-        type: 'chat',
-        payload: receiverPayload, // send msg with only successful uploads to other chat participants
-      });
-      updateMessage(senderPayload.roomId, senderPayload.id, senderPayload);
-      db.upsertSingleMessage(senderPayload);
-
-      // eslint-disable-next-line no-console
-      console.log(
-        'Successful photo message sent:',
-        senderPayload,
-        receiverPayload,
-      );
+      // On success:
+      updateMessage(senderPayload.roomId, senderPayload.id, senderPayload); // 1. Update UI to show uploaded photos to sender
+      db.upsertSingleMessage(senderPayload); // 2. Insert message into DB
+      enqueue(wsMessage); // 3. Enqueue message to be sent to other participants
     } catch (err) {
       console.error('Failed to upload files:', err); // eslint-disable-line no-console
-      toast.error(`Failed to upload photos. ${(err as Error).message}`);
 
-      // mark the photo message as failed and not sending it to other chat participants
+      // On failure:
+      toast.error(`Failed to upload photos. ${(err as Error).message}`); // 1. Notify sender about the failure
+
+      // 2. Mark the photo message as failed and not sending it to other chat participants
       // but still update the message status locally
       const senderPayload: ChatMessage = {
         ...placeholderMsg,
@@ -119,6 +105,20 @@ export default function ConversationInput() {
       };
       updateMessage(senderPayload.roomId, senderPayload.id, senderPayload);
       db.upsertSingleMessage(senderPayload);
+    }
+  };
+
+  const handleSend = async () => {
+    const textMsgContent = inputMsg.trim();
+
+    if (!textMsgContent && isEmpty(selectedFiles)) {
+      return; // nothing to send
+    }
+
+    if (textMsgContent && isEmpty(selectedFiles)) {
+      handleSendTextOnlyMsg();
+    } else {
+      handleSendMsgWithPhotos();
     }
   };
 

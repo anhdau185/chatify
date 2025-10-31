@@ -49,12 +49,15 @@ interface WsMessageReact {
 
 type WsMessage = WsMessageJoin | WsMessageChat | WsMessageReact;
 
+type WsMessageComms = WsMessageChat | WsMessageReact;
+
 export type {
   ChatMessage,
   ChatRoom,
   ChatRoomsResponse,
   WsMessage,
   WsMessageChat,
+  WsMessageComms,
   WsMessageJoin,
   WsMessageReact,
   WsPayloadJoin,

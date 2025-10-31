@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
 import Dexie, { type Table } from 'dexie';
 
-import type { ChatMessage, ChatRoom } from '../types';
+import type { ChatMessage, ChatRoom, WsMessageComms } from '../types';
 
 const DB_NAME = 'chatify_user_db';
 
 class ChatDB extends Dexie {
   rooms!: Table<ChatRoom>;
   messages!: Table<ChatMessage>;
+  messageQueue!: Table<WsMessageComms>; // persisted WebSocket messages (NOT chat messages)
 
   constructor() {
     super(DB_NAME);
@@ -17,6 +18,8 @@ class ChatDB extends Dexie {
       rooms: 'id, lastMsgAt, isGroup',
       // index by roomId and createdAt for chronological queries
       messages: 'id, roomId, senderId, createdAt',
+
+      messageQueue: '++id',
     });
   }
 }
@@ -128,6 +131,39 @@ async function upsertSingleMessage(message: ChatMessage) {
   }
 }
 
+async function patchMessage(
+  id: string,
+  patch: Partial<ChatMessage>,
+): Promise<boolean> {
+  try {
+    const updated = await db.messages.update(id, patch);
+    return updated === 1;
+  } catch (err) {
+    console.error('Failed to patch message:', err);
+    return false;
+  }
+}
+
+async function replaceQueue(wsMessages: WsMessageComms[]) {
+  try {
+    await db.transaction('rw', db.messageQueue, async () => {
+      await db.messageQueue.clear(); // clear old queue
+      await db.messageQueue.bulkPut(wsMessages); // insert new queue
+    });
+  } catch (err) {
+    console.error('Failed to replace queue:', err);
+  }
+}
+
+async function getQueue() {
+  try {
+    return db.messageQueue.toArray();
+  } catch (err) {
+    console.error('Failed to get queue:', err);
+    return [];
+  }
+}
+
 export {
   getRecentRooms,
   getRoomMessages,
@@ -138,4 +174,7 @@ export {
   replaceSingleMessage,
   upsertMessages,
   upsertSingleMessage,
+  patchMessage,
+  replaceQueue,
+  getQueue,
 };

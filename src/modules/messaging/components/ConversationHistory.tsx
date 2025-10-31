@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
+import { TriangleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
@@ -105,11 +106,40 @@ export default function ConversationHistory() {
                     </div>
                   )}
 
-                  {/* Message Reactions */}
-                  {(!msg.pendingUploads || msg.status === 'failed') && (
-                    <Reactions message={msg} user={user} />
+                  {/* Reactions */}
+                  {!msg.pendingUploads &&
+                    !['pending', 'failed'].includes(msg.status) && (
+                      <Reactions message={msg} user={user} />
+                    )}
+
+                  {/* Status Shown to Sender */}
+                  {isOwnMsg && (
+                    <>
+                      {msg.status === 'pending' && ( // TODO: Show "Sending..." for "sending" status as well when "sent" status is implemented
+                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
+                          Sending...
+                        </p>
+                      )}
+                      {msg.status === 'sent' && (
+                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
+                          Sent
+                        </p>
+                      )}
+                      {msg.status === 'delivered' && (
+                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
+                          Delivered
+                        </p>
+                      )}
+                      {msg.status === 'failed' && ( // TODO: Allow user to manually retry
+                        <div className="mt-1 flex items-center justify-end gap-1 px-1 text-xs text-red-600">
+                          <TriangleAlert className="h-3 w-3" />
+                          <span>Failed to send</span>
+                        </div>
+                      )}
+                    </>
                   )}
 
+                  {/* Timestamp */}
                   <p
                     className={clsx([
                       'mt-1 px-1 text-xs text-slate-400',

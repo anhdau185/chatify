@@ -15,8 +15,8 @@ import {
 } from '@components/ui/tooltip';
 import * as db from '../db';
 import { buildReactions } from '../lib/utils';
-import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
+import { useMessageQueueStore } from '../store/messageQueueStore';
 import type { ChatMessage, WsMessageReact } from '../types';
 
 const AVAILABLE_EMOJIS = ['👍', '❤️', '👏', '😂', '😮', '😢', '😡', '👎'];
@@ -32,20 +32,18 @@ export default function Reactions({
   const reactions = message.reactions;
   const hasReactions = Object.keys(reactions).length > 0;
   const updateMessage = useChatStore(state => state.updateMessage);
+  const enqueue = useMessageQueueStore(state => state.enqueue);
 
   const handleReact = (emoji: string) => {
     const payload: ChatMessage = {
       ...message,
       reactions: buildReactions(emoji, reactions, user),
     };
-    const wsMessage: WsMessageReact = {
-      type: 'react',
-      payload,
-    };
+    const wsMessage: WsMessageReact = { type: 'react', payload };
 
-    wsClient.dispatch(wsMessage);
     updateMessage(payload.roomId, payload.id, { reactions: payload.reactions });
-    db.upsertSingleMessage(payload);
+    db.patchMessage(payload.id, { reactions: payload.reactions });
+    enqueue(wsMessage);
   };
 
   return (

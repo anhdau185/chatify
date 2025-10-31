@@ -1,4 +1,5 @@
 import { endpoint } from '@shared/lib/utils';
+import * as messageQueueProcessor from '../lib/messageQueueProcessor';
 import type {
   WsMessage,
   WsMessageChat,
@@ -20,8 +21,9 @@ function connect(
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    console.log(`successfully established WebSocket connection to '${wsUrl}'`);
+    console.log(`Successfully established WebSocket connection to '${wsUrl}'`);
     reconnectTimeoutMs = 1000;
+    messageQueueProcessor.start();
   };
 
   ws.onmessage = event => {
@@ -30,12 +32,13 @@ function connect(
   };
 
   ws.onclose = e => {
+    messageQueueProcessor.stop();
     if (e.code !== 1000) {
-      console.log(`lost connection to '${wsUrl}', retrying...`);
+      console.log(`Lost connection to '${wsUrl}', retrying...`);
       setTimeout(() => connect(onReceive), reconnectTimeoutMs); // attempt to reconnect
       reconnectTimeoutMs = Math.min(reconnectTimeoutMs * 2, 15000); // exponential backoff
     } else {
-      console.log(`connection to '${wsUrl}' closed normally.`);
+      console.log(`Connection to '${wsUrl}' closed normally`);
     }
   };
 }
@@ -44,31 +47,41 @@ function isOpen(): boolean {
   return ws.readyState === WebSocket.OPEN;
 }
 
-function join(
-  payload: WsPayloadJoin,
-  callbacks?: { onError: (error: Error) => void },
-) {
-  try {
-    const wsMessage: WsMessageJoin = {
-      type: 'join',
-      payload,
+function join(payload: WsPayloadJoin) {
+  return new Promise<{
+    success: boolean;
+    data: {
+      roomIds: string[];
+      participantId: number;
     };
-    ws.send(JSON.stringify(wsMessage));
-  } catch (err) {
-    callbacks?.onError?.(err as Error);
-  }
+  }>((resolve, reject) => {
+    try {
+      if (ws.readyState !== WebSocket.OPEN) {
+        throw new Error('WebSocket connection is not open');
+      }
+
+      const wsMsg: WsMessageJoin = {
+        type: 'join',
+        payload,
+      };
+      ws.send(JSON.stringify(wsMsg));
+
+      resolve({
+        success: true,
+        data: {
+          roomIds: wsMsg.payload.roomIds,
+          participantId: wsMsg.payload.senderId,
+        },
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
 }
 
-function dispatch(
-  wsMessage: WsMessage,
-  callbacks?: { onError: (error: Error) => void },
-) {
-  try {
-    ws.send(JSON.stringify(wsMessage));
-    console.log(`message sent over WebSocket:`, wsMessage);
-  } catch (err) {
-    callbacks?.onError?.(err as Error);
-  }
+function dispatch(wsMessage: WsMessage) {
+  ws.send(JSON.stringify(wsMessage));
+  console.log(`Message sent over WebSocket:`, wsMessage);
 }
 
 function disconnect() {
