@@ -6,6 +6,8 @@ import * as db from '../db';
 import { buildReactions, getMessage } from '../lib/utils';
 import * as wsClient from '../socket';
 import { useChatRoomIds, useChatStore } from '../store/chatStore';
+import { useMessageQueueStore } from '../store/messageQueueStore';
+import { ChatMessage, WsMessageUpdateStatus } from '../types';
 
 export default function WebSocketWrapper({
   children,
@@ -17,6 +19,7 @@ export default function WebSocketWrapper({
   const roomIds = useChatRoomIds();
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
+  const enqueue = useMessageQueueStore(state => state.enqueue);
 
   useEffect(() => {
     wsClient.connect(wsMessage => {
@@ -24,8 +27,25 @@ export default function WebSocketWrapper({
 
       switch (wsMessage.type) {
         case 'chat': {
-          addMessage(wsMessage.payload);
-          db.upsertSingleMessage(wsMessage.payload);
+          // Update status to "delivered" when a message arrives
+          const deliveredMessage: ChatMessage = {
+            ...wsMessage.payload,
+            status: 'delivered',
+          };
+          addMessage(deliveredMessage);
+          db.upsertSingleMessage(deliveredMessage);
+
+          // Send acknowledgment back to server
+          const deliveryAckMsg: WsMessageUpdateStatus = {
+            type: 'update-status',
+            payload: {
+              id: deliveredMessage.id,
+              roomId: deliveredMessage.roomId,
+              senderId: deliveredMessage.senderId,
+              status: 'delivered',
+            },
+          };
+          enqueue(deliveryAckMsg);
           break;
         }
 
@@ -48,6 +68,16 @@ export default function WebSocketWrapper({
           });
           db.patchMessage(wsMessage.payload.id, {
             reactions: rebuiltReactions,
+          });
+          break;
+        }
+
+        case 'update-status': {
+          updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
+            status: wsMessage.payload.status,
+          });
+          db.patchMessage(wsMessage.payload.id, {
+            status: wsMessage.payload.status,
           });
           break;
         }

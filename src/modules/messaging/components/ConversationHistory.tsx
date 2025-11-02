@@ -115,7 +115,8 @@ export default function ConversationHistory() {
                   {/* Status Shown to Sender */}
                   {isOwnMsg && (
                     <>
-                      {msg.status === 'pending' && ( // TODO: Show "Sending..." for "sending" status as well when "sent" status is implemented
+                      {(msg.status === 'pending' ||
+                        msg.status === 'sending') && (
                         <p className="mt-1 px-1 text-right text-xs text-slate-400">
                           Sending...
                         </p>

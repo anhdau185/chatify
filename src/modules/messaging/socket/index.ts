@@ -2,9 +2,8 @@ import { endpoint } from '@shared/lib/utils';
 import * as messageQueueProcessor from '../lib/messageQueueProcessor';
 import type {
   WsMessage,
-  WsMessageChat,
+  WsMessageComms,
   WsMessageJoin,
-  WsMessageReact,
   WsPayloadJoin,
 } from '../types';
 
@@ -12,10 +11,7 @@ let ws: WebSocket;
 let reconnectTimeoutMs = 1000; // 1 second intitially
 
 function connect(
-  onReceive: (
-    data: WsMessageChat | WsMessageReact,
-    connection: WebSocket,
-  ) => void,
+  onReceive: (data: WsMessageComms, connection: WebSocket) => void,
 ) {
   const wsUrl = endpoint('/messaging/ws', { protocol: 'ws' });
   ws = new WebSocket(wsUrl);
@@ -27,7 +23,7 @@ function connect(
   };
 
   ws.onmessage = event => {
-    const msg = JSON.parse(event.data) as WsMessageChat | WsMessageReact;
+    const msg = JSON.parse(event.data) as WsMessageComms;
     onReceive(msg, ws);
   };
 

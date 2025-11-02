@@ -52,9 +52,23 @@ interface WsMessageReact {
   };
 }
 
-type WsMessage = WsMessageJoin | WsMessageChat | WsMessageReact;
+interface WsMessageUpdateStatus {
+  type: 'update-status';
+  payload: {
+    id: string;
+    roomId: string;
+    senderId: number;
+    status: ChatMessage['status'];
+  };
+}
 
-type WsMessageComms = WsMessageChat | WsMessageReact;
+type WsMessage =
+  | WsMessageJoin
+  | WsMessageChat
+  | WsMessageReact
+  | WsMessageUpdateStatus;
+
+type WsMessageComms = WsMessageChat | WsMessageReact | WsMessageUpdateStatus;
 
 export type {
   ChatMessage,
@@ -65,5 +79,6 @@ export type {
   WsMessageComms,
   WsMessageJoin,
   WsMessageReact,
+  WsMessageUpdateStatus,
   WsPayloadJoin,
 };
