@@ -10,6 +10,8 @@ import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as db from '../db';
 import { useChatStore, useMessagesInActiveRoom } from '../store/chatStore';
+import { useMessageQueueStore } from '../store/messageQueueStore';
+import type { ChatMessage, WsMessageChat } from '../types';
 import PhotosGrid from './PhotosGrid';
 import PhotosGridPlaceholder from './PhotosGridPlaceholder';
 import Reactions from './Reactions';
@@ -20,6 +22,8 @@ export default function ConversationHistory() {
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
   const replaceRoomMessages = useChatStore(state => state.replaceRoomMessages); // activeRoomId is always non-nullable at this stage
   const messages = useMessagesInActiveRoom();
+  const updateMessage = useChatStore(state => state.updateMessage);
+  const enqueue = useMessageQueueStore(state => state.enqueue);
 
   const scrollToBottom = () => {
     const element = conversationContainerRef.current;
@@ -135,10 +139,29 @@ export default function ConversationHistory() {
                           Delivered
                         </p>
                       )}
-                      {msg.status === 'failed' && ( // TODO: Allow user to manually retry
-                        <div className="mt-1 flex items-center justify-end gap-1 px-1 text-xs text-red-600">
+                      {msg.status === 'failed' && (
+                        <div
+                          className="mt-1 flex cursor-pointer items-center justify-end gap-1 px-1 text-xs text-red-600"
+                          onClick={() => {
+                            const payload: ChatMessage = {
+                              ...msg,
+                              status: 'pending',
+                            };
+                            const wsMessage: WsMessageChat = {
+                              type: 'chat',
+                              payload,
+                            };
+
+                            // Immediately update UI and persist to DB
+                            updateMessage(payload.roomId, payload.id, {
+                              status: 'pending',
+                            });
+                            db.patchMessage(payload.id, { status: 'pending' });
+                            enqueue(wsMessage);
+                          }}
+                        >
                           <TriangleAlert className="h-3 w-3" />
-                          <span>Failed to send</span>
+                          <span>Not sent. Click to retry</span>
                         </div>
                       )}
                     </>
