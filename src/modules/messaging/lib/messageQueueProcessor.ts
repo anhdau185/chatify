@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash-es';
 import { toast } from 'sonner';
 
 import * as db from '../db';
@@ -45,7 +46,7 @@ async function processMessageQueue() {
         break; // queue is empty
       }
 
-      const wsMessageToSend = originalWsMessage;
+      const wsMessageToSend = cloneDeep(originalWsMessage);
       const retryTrackingKey = `${wsMessageToSend.payload.id}--${wsMessageToSend.type}`;
 
       if (
