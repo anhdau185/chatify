@@ -119,12 +119,8 @@ export default function ConversationHistory() {
                   {/* Status Shown to Sender */}
                   {isOwnMsg && (
                     <>
-                      {msg.status === 'pending' && (
-                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
-                          Queued
-                        </p>
-                      )}
-                      {msg.status === 'sending' && (
+                      {(msg.status === 'pending' ||
+                        msg.status === 'sending') && (
                         <p className="mt-1 px-1 text-right text-xs text-slate-400">
                           Sending...
                         </p>
@@ -141,7 +137,7 @@ export default function ConversationHistory() {
                       )}
                       {msg.status === 'failed' && (
                         <div
-                          className="mt-1 flex cursor-pointer items-center justify-end gap-1 px-1 text-xs text-red-600"
+                          className="mt-1 flex cursor-pointer items-center justify-end gap-1 px-1 text-xs text-red-600 transition-transform active:scale-95 active:opacity-80"
                           onClick={() => {
                             const payload: ChatMessage = {
                               ...msg,

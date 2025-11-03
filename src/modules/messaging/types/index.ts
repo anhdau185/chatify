@@ -54,12 +54,10 @@ interface WsMessageReact {
 
 interface WsMessageUpdateStatus {
   type: 'update-status';
-  payload: {
-    id: string;
-    roomId: string;
-    senderId: number;
-    status: ChatMessage['status'];
-  };
+  payload: Pick<
+    ChatMessage,
+    'id' | 'roomId' | 'senderId' | 'status' | 'createdAt'
+  >;
 }
 
 type WsMessage =

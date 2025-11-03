@@ -42,6 +42,7 @@ export default function WebSocketWrapper({
               id: deliveredMessage.id,
               roomId: deliveredMessage.roomId,
               senderId: deliveredMessage.senderId,
+              createdAt: deliveredMessage.createdAt,
               status: 'delivered',
             },
           };
@@ -73,12 +74,29 @@ export default function WebSocketWrapper({
         }
 
         case 'update-status': {
-          updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
-            status: wsMessage.payload.status,
-          });
-          db.patchMessage(wsMessage.payload.id, {
-            status: wsMessage.payload.status,
-          });
+          switch (wsMessage.payload.status) {
+            case 'sent':
+            case 'delivered': {
+              updateMessage(
+                wsMessage.payload.roomId,
+                wsMessage.payload.id,
+                {
+                  status: wsMessage.payload.status,
+                  createdAt: wsMessage.payload.createdAt,
+                },
+                true,
+              );
+              db.patchMessage(wsMessage.payload.id, {
+                status: wsMessage.payload.status,
+                createdAt: wsMessage.payload.createdAt,
+              });
+              break;
+            }
+
+            default: {
+              break;
+            }
+          }
           break;
         }
 

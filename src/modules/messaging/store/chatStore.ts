@@ -22,7 +22,7 @@ type ChatActions = {
     roomId: string,
     msgId: string,
     patch: Partial<ChatMessage>,
-    pushToEnd?: boolean,
+    performSort?: boolean,
   ) => void;
   removeMessage: (roomId: string, msgId: string) => void;
 };
@@ -65,6 +65,8 @@ const useChatStore = create<ChatState & ChatActions>()(
       set(state => {
         const prevMsgs =
           (state.messagesByRoom[msg.roomId] as ChatMessage[] | undefined) ?? [];
+
+        // TODO: Optimize performance of this sorting step
         const newMsgs = [...prevMsgs, msg].sort(
           (a, b) => a.createdAt - b.createdAt,
         );
@@ -92,7 +94,7 @@ const useChatStore = create<ChatState & ChatActions>()(
       });
     },
 
-    updateMessage(roomId, msgId, patch, pushToEnd = false) {
+    updateMessage(roomId, msgId, patch, performSort = false) {
       set(state => {
         const msgsInRoom = state.messagesByRoom[roomId] as
           | ChatMessage[]
@@ -102,33 +104,25 @@ const useChatStore = create<ChatState & ChatActions>()(
           return state; // no messages in the room, nothing to update
         }
 
-        const existingMsg = msgsInRoom.find(m => m.id === msgId);
-        if (!existingMsg) {
+        const isMsgExistent = msgsInRoom.some(m => m.id === msgId);
+        if (!isMsgExistent) {
           return state; // message with msgId not found in the room, nothing to update
         }
 
-        if (pushToEnd) {
-          const updatedMsg = { ...existingMsg, ...patch };
-          const newMsgs = [
-            ...msgsInRoom.filter(m => m.id !== msgId),
-            updatedMsg,
-          ];
+        const newMsgs = msgsInRoom.map(m =>
+          m.id === msgId ? { ...m, ...patch } : m,
+        );
 
-          return {
-            messagesByRoom: {
-              ...state.messagesByRoom,
-              [roomId]: newMsgs,
-            },
-          };
+        if (performSort) {
+          // Optionally perform sort after update (useful when createdAt gets updated)
+          // TODO: Optimize performance of this sorting step
+          newMsgs.sort((a, b) => a.createdAt - b.createdAt);
         }
 
-        // normal update without changing order
         return {
           messagesByRoom: {
             ...state.messagesByRoom,
-            [roomId]: msgsInRoom.map(m =>
-              m.id === msgId ? { ...m, ...patch } : m,
-            ),
+            [roomId]: newMsgs,
           },
         };
       });
