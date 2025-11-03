@@ -115,8 +115,12 @@ export default function ConversationHistory() {
                   {/* Status Shown to Sender */}
                   {isOwnMsg && (
                     <>
-                      {(msg.status === 'pending' ||
-                        msg.status === 'sending') && (
+                      {msg.status === 'pending' && (
+                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
+                          Queued
+                        </p>
+                      )}
+                      {msg.status === 'sending' && (
                         <p className="mt-1 px-1 text-right text-xs text-slate-400">
                           Sending...
                         </p>
