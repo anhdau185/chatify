@@ -65,7 +65,9 @@ const useChatStore = create<ChatState & ChatActions>()(
       set(state => {
         const prevMsgs =
           (state.messagesByRoom[msg.roomId] as ChatMessage[] | undefined) ?? [];
-        const newMsgs = [...prevMsgs, msg];
+        const newMsgs = [...prevMsgs, msg].sort(
+          (a, b) => a.createdAt - b.createdAt,
+        );
 
         const room = (state.rooms[msg.roomId] as ChatRoom | undefined) ?? null;
 
@@ -75,7 +77,6 @@ const useChatStore = create<ChatState & ChatActions>()(
             ...state.messagesByRoom,
             [msg.roomId]: newMsgs,
           },
-
           // update lastMsg and lastMsgAt in the corresponding room (if exists)
           rooms: room
             ? {
