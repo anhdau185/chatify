@@ -22,6 +22,7 @@ type ChatActions = {
     roomId: string,
     msgId: string,
     patch: Partial<ChatMessage>,
+    pushToEnd?: boolean,
   ) => void;
   removeMessage: (roomId: string, msgId: string) => void;
 };
@@ -90,25 +91,41 @@ const useChatStore = create<ChatState & ChatActions>()(
       });
     },
 
-    updateMessage(roomId, msgId, patch) {
+    updateMessage(roomId, msgId, patch, pushToEnd = false) {
       set(state => {
-        const existingMsgsInRoom = state.messagesByRoom[roomId] as
+        const msgsInRoom = state.messagesByRoom[roomId] as
           | ChatMessage[]
           | undefined;
 
-        if (!existingMsgsInRoom || isEmpty(existingMsgsInRoom)) {
+        if (!msgsInRoom || isEmpty(msgsInRoom)) {
           return state; // no messages in the room, nothing to update
         }
 
-        const msgExistsInRoom = existingMsgsInRoom.some(m => m.id === msgId);
-        if (!msgExistsInRoom) {
+        const existingMsg = msgsInRoom.find(m => m.id === msgId);
+        if (!existingMsg) {
           return state; // message with msgId not found in the room, nothing to update
         }
 
+        if (pushToEnd) {
+          const updatedMsg = { ...existingMsg, ...patch };
+          const newMsgs = [
+            ...msgsInRoom.filter(m => m.id !== msgId),
+            updatedMsg,
+          ];
+
+          return {
+            messagesByRoom: {
+              ...state.messagesByRoom,
+              [roomId]: newMsgs,
+            },
+          };
+        }
+
+        // normal update without changing order
         return {
           messagesByRoom: {
             ...state.messagesByRoom,
-            [roomId]: existingMsgsInRoom.map(m =>
+            [roomId]: msgsInRoom.map(m =>
               m.id === msgId ? { ...m, ...patch } : m,
             ),
           },
