@@ -13,6 +13,7 @@ type MessageQueueState = {
 type MessageQueueAction = {
   setQueue: (wsMessages: WsMessageComms[]) => void;
   enqueue: (wsMessage: WsMessageComms) => void;
+  enqueueFront: (wsMessage: WsMessageComms) => void;
   dequeue: () => WsMessageComms | null;
 };
 
@@ -27,6 +28,12 @@ const useMessageQueueStore = create<MessageQueueState & MessageQueueAction>()(
     enqueue(wsMessage) {
       set(state => ({
         queue: state.queue.push(wsMessage),
+      }));
+    },
+
+    enqueueFront(wsMessage) {
+      set(state => ({
+        queue: state.queue.unshift(wsMessage),
       }));
     },
 
