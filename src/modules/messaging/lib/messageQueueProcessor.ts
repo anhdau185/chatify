@@ -16,7 +16,7 @@ type MessageProcessor = {
 
 const PROCESSOR_CONFIG = {
   INTERVAL_MS: 3000, // how often to check queue
-  MAX_RETRIES: 3, // maximum retry attempts per message
+  MAX_RETRIES: 4, // maximum retry attempts per message
   BATCH_SIZE: 5, // max messages to process per interval
   RETRY_DELAY_MS: 1000, // delay between retries
 } as const;
@@ -82,11 +82,13 @@ async function processMessageQueue() {
         const currentRetries = processor.retryCount.get(retryTrackingKey) || 0;
 
         if (currentRetries < PROCESSOR_CONFIG.MAX_RETRIES) {
-          // Re-enqueue original WS message with incremented retry count
+          // Increment retry count for this item
           processor.retryCount.set(retryTrackingKey, currentRetries + 1);
-          useMessageQueueStore.getState().enqueue(originalWsMessage);
 
-          // Add exponential backoff delay
+          // Re-enqueue item at the head so it's retried immediately next iteration (preserve original order)
+          useMessageQueueStore.getState().enqueueFront(originalWsMessage);
+
+          // Exponential backoff delay (pause this run) before starting next attempt to avoid retrying too quickly
           await new Promise<void>(resolve => {
             window.setTimeout(
               resolve,
