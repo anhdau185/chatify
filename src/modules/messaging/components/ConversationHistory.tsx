@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
-import { TriangleAlert } from 'lucide-react';
+import { Check, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
@@ -81,6 +81,27 @@ export default function ConversationHistory() {
                   </Avatar>
                 )}
                 <div>
+                  {/* Timestamp */}
+                  <div
+                    className={clsx([
+                      'mb-1 flex items-center gap-1 px-1 text-xs text-slate-400',
+                      isOwnMsg && 'justify-end',
+                    ])}
+                  >
+                    {isOwnMsg &&
+                      ['pending', 'sending'].includes(msg.status) && (
+                        <span>Sending...</span>
+                      )}
+
+                    {!['pending', 'sending'].includes(msg.status) && (
+                      <span>{dayjs(msg.createdAt).format('HH:mm')}</span>
+                    )}
+
+                    {isOwnMsg && msg.status === 'sent' && (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </div>
+
                   {/* Placeholder Photo Grid for Uploads in Progress */}
                   {msg.pendingUploads && msg.pendingUploads > 0 && (
                     <PhotosGridPlaceholder
@@ -119,17 +140,6 @@ export default function ConversationHistory() {
                   {/* Status Shown to Sender */}
                   {isOwnMsg && (
                     <>
-                      {(msg.status === 'pending' ||
-                        msg.status === 'sending') && (
-                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
-                          Sending...
-                        </p>
-                      )}
-                      {msg.status === 'sent' && (
-                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
-                          Sent
-                        </p>
-                      )}
                       {msg.status === 'delivered' && (
                         <p className="mt-1 px-1 text-right text-xs text-slate-400">
                           Delivered
@@ -162,16 +172,6 @@ export default function ConversationHistory() {
                       )}
                     </>
                   )}
-
-                  {/* Timestamp */}
-                  <p
-                    className={clsx([
-                      'mt-1 px-1 text-xs text-slate-400',
-                      isOwnMsg && 'text-right',
-                    ])}
-                  >
-                    {dayjs(msg.createdAt).format('HH:mm')}
-                  </p>
                 </div>
               </div>
             </div>

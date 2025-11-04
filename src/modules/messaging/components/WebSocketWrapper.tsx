@@ -75,21 +75,17 @@ export default function WebSocketWrapper({
 
         case 'update-status': {
           switch (wsMessage.payload.status) {
-            case 'sent':
-            case 'delivered': {
-              updateMessage(
-                wsMessage.payload.roomId,
-                wsMessage.payload.id,
-                {
-                  status: wsMessage.payload.status,
-                  createdAt: wsMessage.payload.createdAt,
-                },
-                true,
-              );
+            case 'sent': {
+              updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
+                status: wsMessage.payload.status,
+              });
               db.patchMessage(wsMessage.payload.id, {
                 status: wsMessage.payload.status,
-                createdAt: wsMessage.payload.createdAt,
               });
+              break;
+            }
+
+            case 'delivered': {
               break;
             }
 

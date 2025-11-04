@@ -16,7 +16,7 @@ type MessageProcessor = {
 
 const PROCESSOR_CONFIG = {
   INTERVAL_MS: 3000, // how often to check queue
-  MAX_RETRIES: 4, // maximum retry attempts per message
+  MAX_RETRIES: 3, // maximum retry attempts per message
   BATCH_SIZE: 5, // max messages to process per interval
   RETRY_DELAY_MS: 1000, // delay between retries
 } as const;
