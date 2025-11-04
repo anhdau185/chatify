@@ -21,6 +21,16 @@ class ChatDB extends Dexie {
 
       messageQueue: '++id',
     });
+
+    // Add compound index for efficient per-room chronological queries
+    // NOTE: Bump DB version when changing indexes to trigger upgrade
+    this.version(2).stores({
+      rooms: 'id, lastMsgAt, isGroup',
+      // compound index enables indexed range queries by roomId then createdAt
+      messages: 'id, roomId, senderId, createdAt, [roomId+createdAt]',
+
+      messageQueue: '++id',
+    });
   }
 }
 
@@ -47,7 +57,11 @@ async function getRecentRooms(userId: number): Promise<ChatRoom[]> {
 
 async function getRoomMessages(roomId: string): Promise<ChatMessage[]> {
   try {
-    return db.messages.where('roomId').equals(roomId).sortBy('createdAt');
+    // Use compound index to iterate in createdAt order within a room without in-memory sort
+    return db.messages
+      .where('[roomId+createdAt]')
+      .between([roomId, Dexie.minKey], [roomId, Dexie.maxKey])
+      .toArray();
   } catch (err) {
     console.error(`Failed to get messages for roomId=${roomId}:`, err);
     return [];
