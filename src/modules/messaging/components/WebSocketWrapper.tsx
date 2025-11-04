@@ -85,6 +85,23 @@ export default function WebSocketWrapper({
               break;
             }
 
+            case 'retry-successful': {
+              updateMessage(
+                wsMessage.payload.roomId,
+                wsMessage.payload.id,
+                {
+                  status: wsMessage.payload.status,
+                  createdAt: wsMessage.payload.createdAt,
+                },
+                true,
+              );
+              db.patchMessage(wsMessage.payload.id, {
+                status: wsMessage.payload.status,
+                createdAt: wsMessage.payload.createdAt,
+              });
+              break;
+            }
+
             case 'delivered': {
               break;
             }

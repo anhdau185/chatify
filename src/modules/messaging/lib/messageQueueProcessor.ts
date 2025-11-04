@@ -67,8 +67,11 @@ async function processMessageQueue() {
         // 2. Remove from retry tracking if it's there
         processor.retryCount.delete(retryTrackingKey);
 
-        if (wsMessageToSend.type === 'chat') {
-          // 3. For "chat" message only: Update status to "sending" (UI and DB)
+        if (
+          wsMessageToSend.type === 'chat' &&
+          wsMessageToSend.payload.status === 'sending'
+        ) {
+          // 3. For "chat" message only: Update status to "sending" (if not "retrying")
           useChatStore
             .getState()
             .updateMessage(

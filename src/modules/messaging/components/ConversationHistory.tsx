@@ -88,18 +88,23 @@ export default function ConversationHistory() {
                       isOwnMsg && 'justify-end',
                     ])}
                   >
+                    {isOwnMsg && (
+                      <>
+                        {['pending', 'sending'].includes(msg.status) && (
+                          <span>Sending...</span>
+                        )}
+                        {msg.status === 'retrying' && <span>Retrying...</span>}
+                      </>
+                    )}
+
+                    {!['pending', 'sending', 'retrying'].includes(
+                      msg.status,
+                    ) && <span>{dayjs(msg.createdAt).format('HH:mm')}</span>}
+
                     {isOwnMsg &&
-                      ['pending', 'sending'].includes(msg.status) && (
-                        <span>Sending...</span>
+                      ['sent', 'retry-successful'].includes(msg.status) && (
+                        <Check className="h-4 w-4" />
                       )}
-
-                    {!['pending', 'sending'].includes(msg.status) && (
-                      <span>{dayjs(msg.createdAt).format('HH:mm')}</span>
-                    )}
-
-                    {isOwnMsg && msg.status === 'sent' && (
-                      <Check className="h-4 w-4" />
-                    )}
                   </div>
 
                   {/* Placeholder Photo Grid for Uploads in Progress */}
@@ -151,7 +156,7 @@ export default function ConversationHistory() {
                           onClick={() => {
                             const payload: ChatMessage = {
                               ...msg,
-                              status: 'pending',
+                              status: 'retrying',
                             };
                             const wsMessage: WsMessageChat = {
                               type: 'chat',
@@ -160,9 +165,9 @@ export default function ConversationHistory() {
 
                             // Immediately update UI and persist to DB
                             updateMessage(payload.roomId, payload.id, {
-                              status: 'pending',
+                              status: 'retrying',
                             });
-                            db.patchMessage(payload.id, { status: 'pending' });
+                            db.patchMessage(payload.id, { status: 'retrying' });
                             enqueue(wsMessage);
                           }}
                         >
