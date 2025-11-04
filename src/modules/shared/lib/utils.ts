@@ -69,6 +69,12 @@ function getRoomName(room: ChatRoom, currentUserId: number) {
   return getDmChatPartner(room, currentUserId)?.name || 'Unknown User';
 }
 
+function delay(ms: number) {
+  return new Promise<void>(resolve => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 export {
   inDesktopEnv,
   cn,
@@ -77,4 +83,5 @@ export {
   abbreviate,
   getDmChatPartner,
   getRoomName,
+  delay,
 };

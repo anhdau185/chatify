@@ -1,6 +1,7 @@
 import { cloneDeep } from 'lodash-es';
 import { toast } from 'sonner';
 
+import { delay } from '@shared/lib/utils';
 import * as db from '../db';
 import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
@@ -92,12 +93,9 @@ async function processMessageQueue() {
           useMessageQueueStore.getState().enqueueFront(originalWsMessage);
 
           // Exponential backoff delay (pause this run) before starting next attempt to avoid retrying too quickly
-          await new Promise<void>(resolve => {
-            window.setTimeout(
-              resolve,
-              PROCESSOR_CONFIG.RETRY_DELAY_MS * Math.pow(2, currentRetries),
-            );
-          });
+          await delay(
+            PROCESSOR_CONFIG.RETRY_DELAY_MS * Math.pow(2, currentRetries),
+          );
         } else {
           // On max retries reached:
           // 1. Increment the processed count in the current batch
