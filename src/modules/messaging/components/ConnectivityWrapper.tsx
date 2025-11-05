@@ -160,48 +160,34 @@ export default function ConnectivityWrapper({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (isEmpty(roomIds) || alreadyJoinedFlag.current) {
+    if (!canSendNow || isEmpty(roomIds) || alreadyJoinedFlag.current) {
       return;
     }
 
-    if (canSendNow) {
-      // When connectivity's available/restored, join/rejoin rooms, then lastly start queue processing
-      wsClient
-        .join({ roomIds, senderId: userId })
-        .then(() => {
-          alreadyJoinedFlag.current = true;
-          return delay(200); // small jitter after joining before starting queue
-        })
-        .then(() => messageQueueProcessor.start())
-        .catch(err => {
-          alreadyJoinedFlag.current = false;
-          // eslint-disable-next-line no-console
-          console.error(
-            'Failed to join rooms via WebSocket or to start message queue:',
-            err,
-          );
-        });
-    } else {
-      // When connectivity's lost, just turn alreadyJoinedFlag off to allow rejoining when connectivity's restored
-      alreadyJoinedFlag.current = false;
-    }
-  }, [canSendNow, roomIds, userId]);
-
-  useEffect(() => {
-    if (isEmpty(roomIds) || alreadyJoinedFlag.current) {
-      return;
-    }
-
+    // When connectivity's available/restored, join/rejoin rooms, then lastly start queue processing
     wsClient
       .join({ roomIds, senderId: userId })
       .then(() => {
         alreadyJoinedFlag.current = true;
+        return delay(200); // small jitter after joining before starting queue
       })
+      .then(() => messageQueueProcessor.start())
       .catch(err => {
-        console.error('Failed to join rooms via WebSocket:', err); // eslint-disable-line no-console
         alreadyJoinedFlag.current = false;
+        // eslint-disable-next-line no-console
+        console.error(
+          'Failed to join rooms via WebSocket or to start message queue:',
+          err,
+        );
       });
-  }, [roomIds, userId]);
+  }, [canSendNow, roomIds, userId]);
+
+  useEffect(() => {
+    if (!canSendNow) {
+      // When connectivity's lost, just turn alreadyJoinedFlag off to allow rejoining when connectivity's restored
+      alreadyJoinedFlag.current = false;
+    }
+  }, [canSendNow]);
 
   return <>{children}</>;
 }

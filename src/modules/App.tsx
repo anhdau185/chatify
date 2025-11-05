@@ -43,7 +43,7 @@ function RootLayout({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <AppInitializer>{children}</AppInitializer>
       </QueryClientProvider>
-      <GlobalToaster position="top-center" />
+      <GlobalToaster position="top-center" richColors />
     </>
   );
 }
