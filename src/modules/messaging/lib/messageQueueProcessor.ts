@@ -5,6 +5,10 @@ import { delay } from '@shared/lib/utils';
 import * as db from '../db';
 import * as wsClient from '../socket';
 import { useChatStore } from '../store/chatStore';
+import {
+  selectCanSendNow,
+  useConnectivityStore,
+} from '../store/connectivityStore';
 import { useMessageQueueStore } from '../store/messageQueueStore';
 import type { WsMessageComms } from '../types';
 import { buildReactions, getMessage } from './utils';
@@ -31,7 +35,8 @@ const processor: MessageProcessor = {
 
 // Main processor logic
 async function processMessageQueue() {
-  if (processor.isProcessing || !wsClient.isOpen()) {
+  const canSendNow = selectCanSendNow(useConnectivityStore.getState());
+  if (processor.isProcessing || !canSendNow) {
     return;
   }
 
@@ -196,7 +201,8 @@ function stop() {
 async function trySendingMsgOverWebSocket(wsMessage: WsMessageComms) {
   return new Promise<void>((resolve, reject) => {
     try {
-      if (!wsClient.isOpen()) {
+      const canSendNow = selectCanSendNow(useConnectivityStore.getState());
+      if (!canSendNow) {
         throw new Error('WebSocket connection is not open');
       }
 
