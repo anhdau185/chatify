@@ -2,7 +2,9 @@ import { isEmpty } from 'lodash-es';
 import { useEffect, useRef, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
-import { delay } from '@shared/lib/utils';
+import { deferSideEffect, delay } from '@shared/lib/utils';
+import { Wifi, WifiOff } from 'lucide-react';
+import { toast } from 'sonner';
 import * as db from '../db';
 import * as messageQueueProcessor from '../lib/messageQueueProcessor';
 import { buildReactions, getMessage } from '../lib/utils';
@@ -20,13 +22,18 @@ export default function ConnectivityWrapper({
 }: {
   children: ReactNode;
 }) {
+  const hasLostConnectionOnce = useRef(false);
+  const hasOpenedSocketOnce = useRef(false);
   const alreadyJoinedFlag = useRef(false); // to prevent unnecessary re-joining rooms on every roomIds change
+
   const userId = useAuthStore(state => state.authenticatedUser!.id); // userId is always non-nullable at this stage
   const roomIds = useChatRoomIds();
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
   const enqueue = useMessageQueueStore(state => state.enqueue);
   const setOnline = useConnectivityStore(state => state.setOnline);
+  const isOnline = useConnectivityStore(state => state.isOnline);
+  const socketOpen = useConnectivityStore(state => state.socketOpen);
   const canSendNow = useCanSendNow();
 
   useEffect(() => {
@@ -186,6 +193,44 @@ export default function ConnectivityWrapper({
     if (!canSendNow) {
       // When connectivity's lost, just turn alreadyJoinedFlag off to allow rejoining when connectivity's restored
       alreadyJoinedFlag.current = false;
+    }
+  }, [canSendNow]);
+
+  useEffect(() => {
+    if (!isOnline && !hasLostConnectionOnce.current) {
+      hasLostConnectionOnce.current = true;
+    }
+  }, [isOnline]);
+
+  useEffect(() => {
+    if (socketOpen && !hasOpenedSocketOnce.current) {
+      hasOpenedSocketOnce.current = true;
+    }
+  }, [socketOpen]);
+
+  useEffect(() => {
+    // Effect to show feedback when connectivity is lost
+    if (!canSendNow && hasOpenedSocketOnce.current) {
+      toast.dismiss();
+      deferSideEffect(() => {
+        toast.error("You're offline. Messages will send when back online.", {
+          duration: Infinity,
+          closeButton: true,
+          icon: <WifiOff className="h-4 w-4" />,
+        });
+      });
+    }
+  }, [canSendNow]);
+
+  useEffect(() => {
+    // Effect to show feedback when connectivity is restored
+    if (canSendNow && hasLostConnectionOnce.current) {
+      toast.dismiss();
+      deferSideEffect(() => {
+        toast.success('Back online!', {
+          icon: <Wifi className="h-4 w-4" />,
+        });
+      });
     }
   }, [canSendNow]);
 
