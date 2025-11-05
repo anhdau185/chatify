@@ -144,6 +144,12 @@ export default function ConnectivityWrapper({
             }
 
             case 'delivered': {
+              updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
+                status: wsMessage.payload.status,
+              });
+              db.patchMessage(wsMessage.payload.id, {
+                status: wsMessage.payload.status,
+              });
               break;
             }
 

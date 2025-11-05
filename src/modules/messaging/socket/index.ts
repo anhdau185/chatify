@@ -39,7 +39,7 @@ function connect(
     if (e.code !== 1000) {
       console.log(`Lost connection to '${wsUrl}', retrying...`); // eslint-disable-line no-console
       window.setTimeout(() => connect(onReceive), reconnectTimeoutMs); // attempt to reconnect
-      reconnectTimeoutMs = Math.min(reconnectTimeoutMs * 2, 15000); // exponential backoff
+      reconnectTimeoutMs = Math.min(reconnectTimeoutMs * 2, 12000); // exponential backoff
     } else {
       console.log(`Connection to '${wsUrl}' closed normally`); // eslint-disable-line no-console
     }

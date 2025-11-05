@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
-import { Check, Clock, Loader2, TriangleAlert } from 'lucide-react';
+import { Check, CheckCheck, Clock, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
@@ -81,7 +81,7 @@ export default function ConversationHistory() {
                   </Avatar>
                 )}
                 <div>
-                  {/* Timestamp */}
+                  {/* Timestamp & Status Update */}
                   <div
                     className={clsx([
                       'mb-1 flex items-center gap-1 px-1 text-xs text-slate-400',
@@ -115,10 +115,16 @@ export default function ConversationHistory() {
                       msg.status,
                     ) && <span>{dayjs(msg.createdAt).format('HH:mm')}</span>}
 
-                    {isOwnMsg &&
-                      ['sent', 'retry-successful'].includes(msg.status) && (
-                        <Check className="h-4 w-4" />
-                      )}
+                    {isOwnMsg && (
+                      <>
+                        {['sent', 'retry-successful'].includes(msg.status) && (
+                          <Check className="h-4 w-4" />
+                        )}
+                        {msg.status === 'delivered' && (
+                          <CheckCheck className="h-4 w-4" />
+                        )}
+                      </>
+                    )}
                   </div>
 
                   {/* Placeholder Photo Grid for Uploads in Progress */}
@@ -156,40 +162,31 @@ export default function ConversationHistory() {
                       <Reactions message={msg} user={user} />
                     )}
 
-                  {/* Status Shown to Sender */}
-                  {isOwnMsg && (
-                    <>
-                      {msg.status === 'delivered' && (
-                        <p className="mt-1 px-1 text-right text-xs text-slate-400">
-                          Delivered
-                        </p>
-                      )}
-                      {msg.status === 'failed' && (
-                        <div
-                          className="mt-1 flex cursor-pointer items-center justify-end gap-1 px-1 text-xs text-red-600 transition-transform active:scale-95 active:opacity-80"
-                          onClick={() => {
-                            const payload: ChatMessage = {
-                              ...msg,
-                              status: 'retrying',
-                            };
-                            const wsMessage: WsMessageChat = {
-                              type: 'chat',
-                              payload,
-                            };
+                  {/* Send Failure Feedback */}
+                  {isOwnMsg && msg.status === 'failed' && (
+                    <div
+                      className="mt-1 flex cursor-pointer items-center justify-end gap-1 px-1 text-xs text-red-600 transition-transform active:scale-95 active:opacity-80"
+                      onClick={() => {
+                        const payload: ChatMessage = {
+                          ...msg,
+                          status: 'retrying',
+                        };
+                        const wsMessage: WsMessageChat = {
+                          type: 'chat',
+                          payload,
+                        };
 
-                            // Immediately update UI and persist to DB
-                            updateMessage(payload.roomId, payload.id, {
-                              status: 'retrying',
-                            });
-                            db.patchMessage(payload.id, { status: 'retrying' });
-                            enqueue(wsMessage);
-                          }}
-                        >
-                          <TriangleAlert className="h-3 w-3" />
-                          <span>Not sent. Click to retry</span>
-                        </div>
-                      )}
-                    </>
+                        // Immediately update UI and persist to DB
+                        updateMessage(payload.roomId, payload.id, {
+                          status: 'retrying',
+                        });
+                        db.patchMessage(payload.id, { status: 'retrying' });
+                        enqueue(wsMessage);
+                      }}
+                    >
+                      <TriangleAlert className="h-3 w-3" />
+                      <span>Not sent. Click to retry</span>
+                    </div>
                   )}
                 </div>
               </div>
