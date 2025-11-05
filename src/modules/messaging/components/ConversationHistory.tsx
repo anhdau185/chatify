@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
-import { Check, TriangleAlert } from 'lucide-react';
+import { Check, Clock, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
@@ -90,10 +90,24 @@ export default function ConversationHistory() {
                   >
                     {isOwnMsg && (
                       <>
-                        {['pending', 'sending'].includes(msg.status) && (
-                          <span>Sending...</span>
+                        {msg.status === 'pending' && (
+                          <>
+                            <Clock className="h-4 w-4" />
+                            <span>Queued</span>
+                          </>
                         )}
-                        {msg.status === 'retrying' && <span>Retrying...</span>}
+                        {msg.status === 'sending' && (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Sending...</span>
+                          </>
+                        )}
+                        {msg.status === 'retrying' && (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Retrying...</span>
+                          </>
+                        )}
                       </>
                     )}
 
