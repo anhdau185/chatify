@@ -22,8 +22,8 @@ export default function ConnectivityWrapper({
 }: {
   children: ReactNode;
 }) {
-  const hasLostConnectionOnce = useRef(false);
-  const hasOpenedSocketOnce = useRef(false);
+  const hasLostConnectionTimes = useRef(0);
+  const hasOpenedSocketTimes = useRef(0);
   const alreadyJoinedFlag = useRef(false); // to prevent unnecessary re-joining rooms on every roomIds change
 
   const userId = useAuthStore(state => state.authenticatedUser!.id); // userId is always non-nullable at this stage
@@ -35,6 +35,29 @@ export default function ConnectivityWrapper({
   const isOnline = useConnectivityStore(state => state.isOnline);
   const socketOpen = useConnectivityStore(state => state.socketOpen);
   const canSendNow = useCanSendNow();
+
+  const showConnectionLostToast = (
+    message: string,
+    severity: 'warning' | 'error',
+  ) => {
+    toast.dismiss();
+    deferSideEffect(() => {
+      toast[severity](message, {
+        duration: Infinity,
+        closeButton: true,
+        icon: <WifiOff className="h-4 w-4" />,
+      });
+    });
+  };
+
+  const showConnectionRestoredToast = (message: string) => {
+    toast.dismiss();
+    deferSideEffect(() => {
+      toast.success(message, {
+        icon: <Wifi className="h-4 w-4" />,
+      });
+    });
+  };
 
   useEffect(() => {
     // Attach event listeners to watch for window online/offline events
@@ -202,43 +225,47 @@ export default function ConnectivityWrapper({
     }
   }, [canSendNow]);
 
+  // Effect to show feedback when going offline
   useEffect(() => {
-    if (!isOnline && !hasLostConnectionOnce.current) {
-      hasLostConnectionOnce.current = true;
+    if (!isOnline) {
+      hasLostConnectionTimes.current += 1;
+      showConnectionLostToast(
+        "You're offline. Messages will send when back online.",
+        'error',
+      );
     }
   }, [isOnline]);
 
+  // Effect to show feedback when going back online
   useEffect(() => {
-    if (socketOpen && !hasOpenedSocketOnce.current) {
-      hasOpenedSocketOnce.current = true;
+    if (isOnline && hasLostConnectionTimes.current >= 1) {
+      // Back online from offline state earlier, so notify user
+      showConnectionRestoredToast('Back online.');
+    }
+  }, [isOnline]);
+
+  // Effect to show feedback when socket is restored
+  useEffect(() => {
+    if (socketOpen) {
+      hasOpenedSocketTimes.current += 1;
+
+      if (hasOpenedSocketTimes.current >= 2) {
+        // Socket restored from a disconnection earlier, not the initially established connection, so notify user
+        showConnectionRestoredToast('Connected to server.');
+      }
     }
   }, [socketOpen]);
 
+  // Effect to show feedback when socket is closed
   useEffect(() => {
-    // Effect to show feedback when connectivity is lost
-    if (!canSendNow && hasOpenedSocketOnce.current) {
-      toast.dismiss();
-      deferSideEffect(() => {
-        toast.error("You're offline. Messages will send when back online.", {
-          duration: Infinity,
-          closeButton: true,
-          icon: <WifiOff className="h-4 w-4" />,
-        });
-      });
+    if (!socketOpen && hasOpenedSocketTimes.current >= 1) {
+      // Socket connection closed, not the initial state of "not yet established", so notify user
+      showConnectionLostToast(
+        "Not connected to server. Messages will send when connection's restored.",
+        'warning',
+      );
     }
-  }, [canSendNow]);
-
-  useEffect(() => {
-    // Effect to show feedback when connectivity is restored
-    if (canSendNow && hasLostConnectionOnce.current) {
-      toast.dismiss();
-      deferSideEffect(() => {
-        toast.success('Back online!', {
-          icon: <Wifi className="h-4 w-4" />,
-        });
-      });
-    }
-  }, [canSendNow]);
+  }, [socketOpen]);
 
   return <>{children}</>;
 }
