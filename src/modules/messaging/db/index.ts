@@ -3,9 +3,9 @@ import Dexie, { type Table } from 'dexie';
 
 import type { ChatMessage, ChatRoom, WsMessageComms } from '../types';
 
-const DB_NAME = 'chatify_user_db';
+const DB_NAME = 'chatify_messaging_db';
 
-class ChatDB extends Dexie {
+class MessagingDatabase extends Dexie {
   rooms!: Table<ChatRoom>;
   messages!: Table<ChatMessage>;
   messageQueue!: Table<WsMessageComms>; // persisted WebSocket messages (NOT chat messages)
@@ -34,7 +34,7 @@ class ChatDB extends Dexie {
   }
 }
 
-const db = new ChatDB();
+const db = new MessagingDatabase();
 
 async function getRecentRooms(userId: number): Promise<ChatRoom[]> {
   try {
