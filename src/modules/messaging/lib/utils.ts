@@ -1,7 +1,7 @@
 import { cloneDeep, isEmpty } from 'lodash-es';
 
 import { useChatStore } from '../store/chatStore';
-import type { ChatMessage } from '../types';
+import type { ChatMessage, ChatRoom } from '../types';
 
 function buildReactions(
   emoji: string,
@@ -77,4 +77,26 @@ function getMessage(roomId: string, msgId: string): ChatMessage | null {
   return message;
 }
 
-export { buildReactions, getRoomLatestActivity, getMessage };
+function getDmChatPartner(room: ChatRoom, currentUserId: number) {
+  if (room.isGroup) {
+    return null;
+  }
+
+  return room.members.find(m => m.id !== currentUserId)!;
+}
+
+function getRoomName(room: ChatRoom, currentUserId: number) {
+  if (room.isGroup) {
+    return room.name!;
+  }
+
+  return getDmChatPartner(room, currentUserId)?.name || 'Unknown User';
+}
+
+export {
+  buildReactions,
+  getRoomLatestActivity,
+  getMessage,
+  getDmChatPartner,
+  getRoomName,
+};

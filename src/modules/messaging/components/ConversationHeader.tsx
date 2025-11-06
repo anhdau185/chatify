@@ -3,7 +3,8 @@ import { MoreVertical, Users } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
-import { abbreviate, getRoomName } from '@shared/lib/utils';
+import { abbreviate } from '@shared/lib/utils';
+import { getRoomName } from '../lib/utils';
 import { useActiveRoom } from '../store/chatStore';
 
 export default function ConversationHeader() {

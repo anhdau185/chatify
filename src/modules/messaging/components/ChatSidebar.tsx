@@ -10,10 +10,14 @@ import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Skeleton } from '@components/ui/skeleton';
 import dayjs from '@shared/lib/dayjs';
-import { abbreviate, getDmChatPartner, getRoomName } from '@shared/lib/utils';
+import { abbreviate } from '@shared/lib/utils';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
-import { getRoomLatestActivity } from '../lib/utils';
+import {
+  getDmChatPartner,
+  getRoomLatestActivity,
+  getRoomName,
+} from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 
 export default function ChatSidebar() {
