@@ -85,7 +85,6 @@ export default function ConnectivityWrapper({
 
   useEffect(() => {
     // On component did mount: establish WebSocket connection
-
     wsClient.connect(wsMessage => {
       console.log('Received a message:', wsMessage); // eslint-disable-line no-console
 
@@ -191,6 +190,7 @@ export default function ConnectivityWrapper({
     });
 
     return () => {
+      // On component will unmount: close WebSocket connection
       wsClient.disconnect();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

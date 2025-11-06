@@ -14,6 +14,11 @@ let reconnectTimeoutMs = 1000; // 1 second intitially
 function connect(
   onReceive: (data: WsMessageComms, connection: WebSocket) => void,
 ) {
+  if (ws && ws.readyState !== WebSocket.CLOSED) {
+    // WebSocket connection already established (OPEN) or in progress (CONNECTING), no-op
+    return;
+  }
+
   const wsUrl = endpoint('/messaging/ws', { protocol: 'ws' });
   ws = new WebSocket(wsUrl);
 
@@ -41,7 +46,7 @@ function connect(
       window.setTimeout(() => connect(onReceive), reconnectTimeoutMs); // attempt to reconnect
       reconnectTimeoutMs = Math.min(reconnectTimeoutMs * 2, 12000); // exponential backoff
     } else {
-      console.log(`Connection to '${wsUrl}' closed normally`); // eslint-disable-line no-console
+      console.log(e.reason); // eslint-disable-line no-console
     }
   };
 }
