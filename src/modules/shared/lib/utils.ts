@@ -36,8 +36,6 @@ function endpoint(
   return `${protocol}://${API_HOST}${route}?${queryString}`;
 }
 
-const deferSideEffect = setTimeout;
-
 function abbreviate(text: string) {
   const parts = text.split(' ');
 
@@ -58,4 +56,56 @@ function delay(ms: number) {
   });
 }
 
-export { inDesktopEnv, cn, endpoint, deferSideEffect, abbreviate, delay };
+/**
+ * Defers a side effect just past the current synchronous call stack (no visual delay).
+ *
+ * Uses a microtask so it runs ASAP after the current tick (so React state/read consistency is preserved)
+ * without an artificial delay like setTimeout(0).
+ */
+function deferMicro(microtask: () => void): void {
+  if (typeof queueMicrotask === 'function') {
+    queueMicrotask(microtask);
+  } else {
+    // in case queueMicrotask is not available
+    Promise.resolve().then(microtask);
+  }
+}
+
+/**
+ * Coarse macrotask deferral using a zero-delay timeout
+ * (as soon as possible, not paint-aware).
+ */
+function deferMacro(task: () => void): number {
+  return window.setTimeout(task, 0);
+}
+
+/**
+ * Runs callback on the next animation frame (before paint).
+ */
+function deferToNextFrame(cb: () => void): number {
+  return window.requestAnimationFrame(cb);
+}
+/**
+ * Double-rAF pattern: Ensures at least one paint has occurred before running the callback.
+ *
+ * Useful for deferring the work until after UI has visually settled.
+ *
+ * rAF #1 -> (paint) -> rAF #2 -> cb
+ */
+function deferPostPaint(cb: () => void): void {
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(cb);
+  });
+}
+
+export {
+  inDesktopEnv,
+  cn,
+  endpoint,
+  abbreviate,
+  delay,
+  deferMicro,
+  deferMacro,
+  deferToNextFrame,
+  deferPostPaint,
+};

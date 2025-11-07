@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
-import { deferSideEffect, endpoint } from '@shared/lib/utils';
+import { deferPostPaint, endpoint } from '@shared/lib/utils';
 import type { GeneralApiError } from '@shared/types';
 import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials, LoginResponse, LogoutResponse } from '../types';
@@ -38,8 +38,8 @@ function useLogin() {
       setAuth({ access, authenticatedUser });
       toast.success(`Welcome back, ${authenticatedUser.name}! 🚀`);
 
-      // finally, go to chat screen
-      deferSideEffect(() => navigate('/chat', { replace: true }));
+      // go to chat screen after toast is visible to user
+      deferPostPaint(() => navigate('/chat', { replace: true }));
     },
   });
 }
@@ -68,8 +68,8 @@ function useLogout() {
       removeAuth();
       toast.info('Bye for now. See you soon 👋');
 
-      // finally, go back to login screen
-      deferSideEffect(() => navigate('/login', { replace: true }));
+      // go to login screen after auth state is cleared and toast is shown
+      deferPostPaint(() => navigate('/login', { replace: true }));
     },
   });
 }

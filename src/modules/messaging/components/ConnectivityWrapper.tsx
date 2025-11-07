@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash-es';
 import { useEffect, useRef, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
-import { deferSideEffect, delay } from '@shared/lib/utils';
+import { deferPostPaint, delay } from '@shared/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 import * as db from '../db';
@@ -41,7 +41,7 @@ export default function ConnectivityWrapper({
     severity: 'warning' | 'error',
   ) => {
     toast.dismiss();
-    deferSideEffect(() => {
+    deferPostPaint(() => {
       toast[severity](message, {
         duration: Infinity,
         closeButton: true,
@@ -52,7 +52,7 @@ export default function ConnectivityWrapper({
 
   const showConnectionRestoredToast = (message: string) => {
     toast.dismiss();
-    deferSideEffect(() => {
+    deferPostPaint(() => {
       toast.success(message, {
         icon: <Wifi className="h-4 w-4" />,
       });
