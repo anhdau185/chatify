@@ -39,10 +39,12 @@ export default function ConversationInput() {
     };
     const wsMessage: WsMessageChat = { type: 'chat', payload };
 
-    addMessage(payload);
-    db.upsertSingleMessage(payload);
-    enqueue(wsMessage);
     setInputMsg(''); // clear input after sending
+    addMessage(payload);
+    window.requestIdleCallback(() => {
+      db.upsertSingleMessage(payload);
+    });
+    enqueue(wsMessage);
   };
 
   const handleSendMsgWithPhotos = async () => {
@@ -58,9 +60,9 @@ export default function ConversationInput() {
       createdAt: Date.now(),
     };
 
-    addMessage(placeholderMsg); // render immediately to user with photos placeholder
     setInputMsg(''); // clear input after sending
     setSelectedFiles([]); // clear selected files after sending
+    addMessage(placeholderMsg); // render immediately to user with photos placeholder
 
     try {
       const uploadResult = await uploadMultiple(selectedFiles);
@@ -87,7 +89,9 @@ export default function ConversationInput() {
 
       // On success:
       updateMessage(senderPayload.roomId, senderPayload.id, senderPayload); // 1. Update UI to show uploaded photos to sender
-      db.upsertSingleMessage(senderPayload); // 2. Insert message into DB
+      window.requestIdleCallback(() => {
+        db.upsertSingleMessage(senderPayload); // 2. Insert message into DB
+      });
       enqueue(wsMessage); // 3. Enqueue message to be sent to other participants
     } catch (err) {
       console.error('Failed to upload files:', err); // eslint-disable-line no-console
@@ -104,7 +108,9 @@ export default function ConversationInput() {
         status: 'failed',
       };
       updateMessage(senderPayload.roomId, senderPayload.id, senderPayload);
-      db.upsertSingleMessage(senderPayload);
+      window.requestIdleCallback(() => {
+        db.upsertSingleMessage(senderPayload);
+      });
     }
   };
 

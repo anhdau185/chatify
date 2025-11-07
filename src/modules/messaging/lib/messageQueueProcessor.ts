@@ -85,7 +85,9 @@ async function processMessageQueue() {
               wsMessageToSend.payload.id,
               { status: 'sending' },
             );
-          db.patchMessage(wsMessageToSend.payload.id, { status: 'sending' });
+          window.requestIdleCallback(() => {
+            db.patchMessage(wsMessageToSend.payload.id, { status: 'sending' });
+          });
         }
       } catch (error) {
         const currentRetries = processor.retryCount.get(retryTrackingKey) || 0;
@@ -120,7 +122,11 @@ async function processMessageQueue() {
                   wsMessageToSend.payload.id,
                   { status: 'failed' },
                 );
-              db.patchMessage(wsMessageToSend.payload.id, { status: 'failed' });
+              window.requestIdleCallback(() => {
+                db.patchMessage(wsMessageToSend.payload.id, {
+                  status: 'failed',
+                });
+              });
               break;
             }
 
@@ -150,8 +156,10 @@ async function processMessageQueue() {
                   wsMessageToSend.payload.id,
                   { reactions: revertedReactions },
                 );
-              db.patchMessage(wsMessageToSend.payload.id, {
-                reactions: revertedReactions,
+              window.requestIdleCallback(() => {
+                db.patchMessage(wsMessageToSend.payload.id, {
+                  reactions: revertedReactions,
+                });
               });
               break;
             }

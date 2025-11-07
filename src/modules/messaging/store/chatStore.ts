@@ -189,9 +189,11 @@ function useMessagesInActiveRoom(): ChatMessage[] {
 useChatStore.subscribe(
   state => state.rooms,
   roomsRecord => {
-    // turn roomsRecord { roomId -> ChatRoom } into a single array of rooms
-    const rooms = Object.values(roomsRecord);
-    db.replaceAllRooms(rooms);
+    window.requestIdleCallback(() => {
+      // turn roomsRecord { roomId -> ChatRoom } into a single array of rooms
+      const rooms = Object.values(roomsRecord);
+      db.replaceAllRooms(rooms);
+    });
   },
 );
 

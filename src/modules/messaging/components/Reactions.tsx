@@ -48,7 +48,9 @@ export default function Reactions({
     };
 
     updateMessage(message.roomId, message.id, { reactions: rebuiltReactions });
-    db.patchMessage(message.id, { reactions: rebuiltReactions });
+    window.requestIdleCallback(() => {
+      db.patchMessage(message.id, { reactions: rebuiltReactions });
+    });
     enqueue(wsMessage);
   };
 

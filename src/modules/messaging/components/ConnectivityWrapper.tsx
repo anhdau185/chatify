@@ -96,7 +96,9 @@ export default function ConnectivityWrapper({
             status: 'delivered',
           };
           addMessage(deliveredMessage);
-          db.upsertSingleMessage(deliveredMessage);
+          window.requestIdleCallback(() => {
+            db.upsertSingleMessage(deliveredMessage);
+          });
 
           // Send acknowledgment back to server
           const deliveryAckMsg: WsMessageUpdateStatus = {
@@ -130,8 +132,10 @@ export default function ConnectivityWrapper({
           updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
             reactions: rebuiltReactions,
           });
-          db.patchMessage(wsMessage.payload.id, {
-            reactions: rebuiltReactions,
+          window.requestIdleCallback(() => {
+            db.patchMessage(wsMessage.payload.id, {
+              reactions: rebuiltReactions,
+            });
           });
           break;
         }
@@ -142,8 +146,10 @@ export default function ConnectivityWrapper({
               updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
                 status: wsMessage.payload.status,
               });
-              db.patchMessage(wsMessage.payload.id, {
-                status: wsMessage.payload.status,
+              window.requestIdleCallback(() => {
+                db.patchMessage(wsMessage.payload.id, {
+                  status: wsMessage.payload.status,
+                });
               });
               break;
             }
@@ -158,9 +164,11 @@ export default function ConnectivityWrapper({
                 },
                 true,
               );
-              db.patchMessage(wsMessage.payload.id, {
-                status: wsMessage.payload.status,
-                createdAt: wsMessage.payload.createdAt,
+              window.requestIdleCallback(() => {
+                db.patchMessage(wsMessage.payload.id, {
+                  status: wsMessage.payload.status,
+                  createdAt: wsMessage.payload.createdAt,
+                });
               });
               break;
             }
@@ -169,8 +177,10 @@ export default function ConnectivityWrapper({
               updateMessage(wsMessage.payload.roomId, wsMessage.payload.id, {
                 status: wsMessage.payload.status,
               });
-              db.patchMessage(wsMessage.payload.id, {
-                status: wsMessage.payload.status,
+              window.requestIdleCallback(() => {
+                db.patchMessage(wsMessage.payload.id, {
+                  status: wsMessage.payload.status,
+                });
               });
               break;
             }

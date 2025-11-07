@@ -180,7 +180,9 @@ export default function ConversationHistory() {
                         updateMessage(payload.roomId, payload.id, {
                           status: 'retrying',
                         });
-                        db.patchMessage(payload.id, { status: 'retrying' });
+                        window.requestIdleCallback(() => {
+                          db.patchMessage(payload.id, { status: 'retrying' });
+                        });
                         enqueue(wsMessage);
                       }}
                     >
