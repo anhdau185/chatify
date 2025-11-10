@@ -75,7 +75,7 @@ const createWindow = (username: string = 'chatify1') => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   createWindow('chatify1'); // Client 1
-  // createWindow('chatify2'); // Client 2
+  createWindow('chatify2'); // Client 2
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
