@@ -89,7 +89,9 @@ function dispatch(wsMessage: WsMessage) {
 }
 
 function disconnect() {
-  ws?.close(1000, 'Client closed connection normally');
+  if (ws) {
+    ws.close(1000, 'Client closed connection normally');
+  }
 }
 
 export { connect, join, dispatch, disconnect };

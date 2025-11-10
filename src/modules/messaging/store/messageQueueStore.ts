@@ -54,9 +54,9 @@ const useMessageQueueStore = create<MessageQueueState & MessageQueueAction>()(
   })),
 );
 
-const persistQueueDebounced = debounce((queue: WsMessageComms[]) => {
+const persistQueueDebounced = debounce((queueItems: WsMessageComms[]) => {
   window.requestIdleCallback(() => {
-    db.replaceQueue(queue);
+    db.replaceQueue(queueItems);
   });
 }, 1000);
 

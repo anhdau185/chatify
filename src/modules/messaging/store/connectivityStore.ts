@@ -51,7 +51,7 @@ export function useCanSendNow() {
   return isOnline && socketOpen;
 }
 
-// Selector for non-hook usage
+// Selector for non-hook usage outside components
 export const selectCanSendNow = (state: ConnectivityState) =>
   state.isOnline && state.socketOpen;
 
