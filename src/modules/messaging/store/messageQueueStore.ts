@@ -8,10 +8,12 @@ import type { WsMessageComms } from '../types';
 
 type MessageQueueState = {
   queue: Queue<WsMessageComms>;
+  outboxReady: boolean;
 };
 
 type MessageQueueAction = {
   setQueue: (wsMessages: WsMessageComms[]) => void;
+  setOutboxReady: (value: boolean) => void;
   enqueue: (wsMessage: WsMessageComms) => void;
   enqueueFront: (wsMessage: WsMessageComms) => void;
   dequeue: () => WsMessageComms | null;
@@ -20,9 +22,14 @@ type MessageQueueAction = {
 const useMessageQueueStore = create<MessageQueueState & MessageQueueAction>()(
   subscribeWithSelector(set => ({
     queue: Queue(),
+    outboxReady: false,
 
     setQueue(wsMessages) {
       set({ queue: Queue(wsMessages) });
+    },
+
+    setOutboxReady(value) {
+      set({ outboxReady: value });
     },
 
     enqueue(wsMessage) {
