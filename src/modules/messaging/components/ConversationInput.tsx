@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash-es';
-import { Image as ImageIcon, Send, Smile, X } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Send, Smile, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,6 +23,7 @@ export default function ConversationInput() {
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
+  const outboxReady = useMessageQueueStore(state => state.outboxReady);
   const enqueue = useMessageQueueStore(state => state.enqueue);
   const { mutateAsync: uploadMultiple } = useUploadMultiple();
 
@@ -115,6 +116,10 @@ export default function ConversationInput() {
   };
 
   const handleSend = async () => {
+    if (!outboxReady) {
+      return;
+    }
+
     const textMsgContent = inputMsg.trim();
 
     if (!textMsgContent && isEmpty(selectedFiles)) {
@@ -187,6 +192,7 @@ export default function ConversationInput() {
         {/* Text Input */}
         <div className="relative flex-1">
           <Input
+            disabled={!outboxReady}
             value={inputMsg}
             onChange={e => setInputMsg(e.target.value)}
             onKeyDown={e => {
@@ -210,9 +216,14 @@ export default function ConversationInput() {
         {/* Send Button */}
         <Button
           onClick={handleSend}
+          disabled={!outboxReady}
           className="h-12 w-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-purple-700"
         >
-          <Send className="h-5 w-5" />
+          {outboxReady ? (
+            <Send className="h-5 w-5" />
+          ) : (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          )}
         </Button>
       </div>
     </div>

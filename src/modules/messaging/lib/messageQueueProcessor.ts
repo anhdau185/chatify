@@ -14,29 +14,32 @@ import type { WsMessageComms } from '../types';
 import { buildReactions, getMessage } from './utils';
 
 type MessageProcessor = {
-  intervalId: number | null;
-  retryCount: Map<string, number>;
+  nextBatchTimeout: number | null;
   isProcessing: boolean;
+  hasAlreadyHydratedQueue: boolean;
+  retryCount: Map<string, number>;
 };
 
-const PROCESSOR_CONFIG = {
-  INTERVAL_MS: 1000, // how often to check queue
-  MAX_RETRIES: 3, // maximum retry attempts per message
-  BATCH_SIZE: 5, // max messages to process per interval
-  RETRY_DELAY_MS: 1000, // delay between retries
-} as const;
+enum ProcessorConfig {
+  BATCH_SIZE = 5, // max messages to process per interval
+  MAX_RETRIES = 3, // maximum retry attempts per message
+  RETRY_DELAY_MS = 1000, // delay between retries
+}
 
 // Processor state management
 const processor: MessageProcessor = {
-  intervalId: null,
-  retryCount: new Map<string, number>(),
+  nextBatchTimeout: null,
   isProcessing: false,
+  hasAlreadyHydratedQueue: false,
+  retryCount: new Map<string, number>(),
 };
 
 // Main processor logic
-async function processMessageQueue() {
-  const canSendNow = selectCanSendNow(useConnectivityStore.getState());
-  if (processor.isProcessing || !canSendNow) {
+async function processBatch() {
+  if (
+    processor.isProcessing ||
+    !selectCanSendNow(useConnectivityStore.getState())
+  ) {
     return;
   }
 
@@ -45,9 +48,12 @@ async function processMessageQueue() {
   try {
     let processedCount = 0;
 
-    while (processedCount < PROCESSOR_CONFIG.BATCH_SIZE) {
-      const originalWsMessage = useMessageQueueStore.getState().dequeue();
+    while (processedCount < ProcessorConfig.BATCH_SIZE) {
+      if (!selectCanSendNow(useConnectivityStore.getState())) {
+        break; // connectivity lost mid-batch
+      }
 
+      const originalWsMessage = useMessageQueueStore.getState().dequeue();
       if (!originalWsMessage) {
         break; // queue is empty
       }
@@ -92,7 +98,7 @@ async function processMessageQueue() {
       } catch (error) {
         const currentRetries = processor.retryCount.get(retryTrackingKey) || 0;
 
-        if (currentRetries < PROCESSOR_CONFIG.MAX_RETRIES) {
+        if (currentRetries < ProcessorConfig.MAX_RETRIES) {
           // Increment retry count for this item
           processor.retryCount.set(retryTrackingKey, currentRetries + 1);
 
@@ -100,9 +106,7 @@ async function processMessageQueue() {
           useMessageQueueStore.getState().enqueueFront(originalWsMessage);
 
           // Exponential backoff delay (pause this run) before starting next attempt to avoid retrying too quickly
-          await delay(
-            PROCESSOR_CONFIG.RETRY_DELAY_MS * Math.pow(2, currentRetries),
-          );
+          await delay(ProcessorConfig.RETRY_DELAY_MS * 2 ** currentRetries);
         } else {
           // On max retries reached:
           // 1. Increment the processed count in the current batch
@@ -172,45 +176,27 @@ async function processMessageQueue() {
       }
     }
   } finally {
+    // Current batch completed
     processor.isProcessing = false;
+
+    // Decide whether to schedule the next batch and when to run it
+    const queueItemsLeft = useMessageQueueStore.getState().queue.size;
+    if (
+      queueItemsLeft > 0 &&
+      selectCanSendNow(useConnectivityStore.getState())
+    ) {
+      scheduleBatch(computeNextBatchDelay(queueItemsLeft));
+    }
   }
 }
 
-async function start() {
-  if (processor.intervalId) {
-    return; // already running
-  }
-
-  const initialQueue = await db.getQueue();
-  if (initialQueue.length > 0) {
-    useMessageQueueStore.getState().setQueue(initialQueue);
-  }
-
-  // Initial immediate process
-  processMessageQueue();
-
-  // Set up interval for subsequent processing
-  processor.intervalId = window.setInterval(
-    processMessageQueue,
-    PROCESSOR_CONFIG.INTERVAL_MS,
-  );
-}
-
-function stop() {
-  if (processor.intervalId) {
-    window.clearInterval(processor.intervalId);
-    processor.intervalId = null;
-  }
-  processor.retryCount.clear();
-  processor.isProcessing = false;
-}
-
-// Helper function to send the actual message
+/**
+ * Helper function to send the actual message
+ */
 async function trySendingMsgOverWebSocket(wsMessage: WsMessageComms) {
   return new Promise<void>((resolve, reject) => {
     try {
-      const canSendNow = selectCanSendNow(useConnectivityStore.getState());
-      if (!canSendNow) {
+      if (!selectCanSendNow(useConnectivityStore.getState())) {
         throw new Error('WebSocket connection is not open');
       }
 
@@ -220,6 +206,129 @@ async function trySendingMsgOverWebSocket(wsMessage: WsMessageComms) {
       reject(err);
     }
   });
+}
+
+/**
+ * Pure function to compute delay in ms before the next batch runs.
+ * Queue-size tiers drive base delay; optional last batch duration in ms
+ * can slightly adjust pacing (ignored if not provided).
+ */
+function computeNextBatchDelay(
+  queueSize: number,
+  lastBatchDurationMs?: number,
+): number {
+  // Base delay by backlog size
+  let base =
+    queueSize >= 200
+      ? 75
+      : queueSize >= 100
+        ? 125
+        : queueSize >= 50
+          ? 200
+          : queueSize >= 10
+            ? 350
+            : 500;
+
+  // Optional tweak based on last batch duration
+  if (typeof lastBatchDurationMs === 'number') {
+    if (lastBatchDurationMs > 900) {
+      base += 150; // heavy batch: slow down a bit
+    } else if (lastBatchDurationMs < 200) {
+      base -= 75; // quick batch: speed up a bit
+    }
+  }
+
+  // Clamp to safe bounds
+  if (base < 50) {
+    base = 50;
+  } else if (base > 800) {
+    base = 800;
+  }
+
+  return base;
+}
+
+/**
+ * Schedules next batch processing with an optional delay.
+ */
+function scheduleBatch(delayMs = 0) {
+  if (processor.isProcessing || processor.nextBatchTimeout != null) {
+    return;
+  }
+
+  processor.nextBatchTimeout = window.setTimeout(() => {
+    processor.nextBatchTimeout = null;
+    void processBatch();
+  }, delayMs);
+}
+
+/**
+ * Auto wake-up: if the queue transitions from empty -> non-empty while we are
+ * allowed to send and the processor is idle (no batch scheduled), schedule an
+ * immediate batch. This removes the need for external callers to remember to
+ * invoke start() after enqueue operations.
+ *
+ * We purposefully only react to 'size == 0' -> 'size > 0' transition to avoid redundant
+ * scheduling on subsequent enqueues while a batch or timeout is already in
+ * flight. Strict ordering is preserved because we still process sequentially.
+ */
+void useMessageQueueStore.subscribe(
+  state => state.queue.size,
+  (size, prevSize) => {
+    if (
+      prevSize === 0 &&
+      size > 0 &&
+      !processor.isProcessing &&
+      processor.nextBatchTimeout == null &&
+      selectCanSendNow(useConnectivityStore.getState())
+    ) {
+      scheduleBatch(0);
+    }
+  },
+);
+
+// Public APIs
+
+/**
+ * Starts / resumes the queue processing.
+ * Asynchronously hydrates the queue from DB beforehand if needed.
+ */
+async function start() {
+  if (processor.isProcessing || processor.nextBatchTimeout != null) {
+    return;
+  }
+
+  if (useMessageQueueStore.getState().queue.size > 0) {
+    // Queue has items, start processing ASAP
+    scheduleBatch(0);
+    return;
+  }
+
+  // Queue is empty here, check if we need to hydrate from DB
+  if (!processor.hasAlreadyHydratedQueue) {
+    // Runs only once: Queue not yet hydrated, get persisted queue from DB and set into store
+    processor.hasAlreadyHydratedQueue = true;
+    const initialQueue = await db.getQueue();
+
+    if (initialQueue.length > 0) {
+      // There are persisted items so we'll rely on the queue-size subscription to auto-schedule a batch
+      useMessageQueueStore.getState().setQueue(initialQueue);
+    }
+  }
+}
+
+/**
+ * Pauses the queue processing and cancels any scheduled future batch.
+ * Keeps `processor.retryCount` tracking by default to preserve backoff state.
+ */
+function stop(resetRetries = false) {
+  if (processor.nextBatchTimeout != null) {
+    window.clearTimeout(processor.nextBatchTimeout);
+    processor.nextBatchTimeout = null;
+  }
+
+  if (resetRetries) processor.retryCount.clear();
+  processor.isProcessing = false;
 }
 
 export { start, stop };

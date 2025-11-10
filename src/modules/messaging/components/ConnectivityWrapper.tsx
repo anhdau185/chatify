@@ -51,6 +51,7 @@ export default function ConnectivityWrapper({
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
   const enqueue = useMessageQueueStore(state => state.enqueue);
+  const setOutboxReady = useMessageQueueStore(state => state.setOutboxReady);
 
   const setOnline = useConnectivityStore(state => state.setOnline);
   const isOnline = useConnectivityStore(state => state.isOnline);
@@ -215,7 +216,7 @@ export default function ConnectivityWrapper({
       .join({ roomIds, senderId: userId })
       .then(() => {
         hasAlreadyJoinedRooms.current = true;
-        return delay(200); // small jitter after joining before starting queue
+        return delay(300); // small delay after joining before starting queue
       })
       .then(() => messageQueueProcessor.start())
       .then(() => {
@@ -229,8 +230,11 @@ export default function ConnectivityWrapper({
           err,
         );
         hasAlreadyJoinedRooms.current = false;
+      })
+      .finally(() => {
+        setOutboxReady(true);
       });
-  }, [canSendNow, roomIds, userId]);
+  }, [canSendNow, roomIds, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!canSendNow) {
