@@ -19,6 +19,7 @@ import {
   getRoomName,
 } from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
+import SyncAlertBanner from './SyncAlertBanner';
 
 export default function ChatSidebar() {
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
@@ -75,6 +76,11 @@ export default function ChatSidebar() {
 
       {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
+        {/* Alert Banners */}
+        <div className="p-2">
+          <SyncAlertBanner />
+        </div>
+
         {isFetching &&
           [1, 2, 3, 4, 5].map(i => (
             <div key={i} className="flex items-center gap-3">
