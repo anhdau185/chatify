@@ -280,7 +280,7 @@ export default function ConnectivityWrapper({
       // Socket connection closed, not the initial state of "not yet established", so notify user
       connectivityLostToast(
         "Not connected to server. Messages will be sent when connection's restored.",
-        'warning',
+        'error',
       );
     }
   }, [socketOpen]);
