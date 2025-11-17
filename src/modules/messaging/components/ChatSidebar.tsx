@@ -41,13 +41,6 @@ export default function ChatSidebar() {
     });
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // if none is selected, select and show the last active room by default
-  useEffect(() => {
-    if (!activeRoomId && !isEmpty(rooms)) {
-      setActiveRoomId(rooms[0].id);
-    }
-  }, [activeRoomId, rooms]); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <div className="flex w-80 flex-col border-r border-slate-200 bg-white">
       {/* Sidebar Header */}
