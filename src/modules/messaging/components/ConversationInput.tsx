@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash-es';
 import { Image as ImageIcon, Loader2, Send, Smile, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +16,7 @@ import PhotoThumbnail from './PhotoThumbnail';
 
 export default function ConversationInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
   const [inputMsg, setInputMsg] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
@@ -26,6 +27,12 @@ export default function ConversationInput() {
   const outboxReady = useMessageQueueStore(state => state.outboxReady);
   const enqueue = useMessageQueueStore(state => state.enqueue);
   const { mutateAsync: uploadMultiple } = useUploadMultiple();
+
+  useEffect(() => {
+    if (activeRoomId && textInputRef.current) {
+      textInputRef.current.focus();
+    }
+  }, [activeRoomId]);
 
   const handleSendTextOnlyMsg = () => {
     const payload: ChatMessage = {
@@ -192,6 +199,7 @@ export default function ConversationInput() {
         {/* Text Input */}
         <div className="relative flex-1">
           <Input
+            ref={textInputRef}
             disabled={!outboxReady}
             value={inputMsg}
             onChange={e => setInputMsg(e.target.value)}
