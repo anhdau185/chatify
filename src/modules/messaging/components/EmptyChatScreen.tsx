@@ -54,12 +54,12 @@ export default function EmptyChatScreen() {
   const rooms = useRecentChatRooms();
 
   return (
-    <div className="flex flex-1 items-center justify-center">
+    <div className="flex flex-1 items-center justify-center pb-16">
       <CarouselSlider>
         <Card className="w-full max-w-sm border-0 shadow-xl">
           <CardHeader>
             <div className="flex items-center justify-center space-x-2">
-              <Lightbulb />
+              <Lightbulb className="h-5 w-5" />
               <CardTitle className="text-center font-bold">
                 Quick Chats
               </CardTitle>
@@ -106,7 +106,7 @@ export default function EmptyChatScreen() {
         <Card className="w-full max-w-sm border-0 shadow-xl">
           <CardHeader>
             <div className="flex items-center justify-center space-x-2">
-              <Settings />
+              <Settings className="h-6 w-6" />
               <CardTitle className="text-center font-bold">
                 Quick Settings
               </CardTitle>
@@ -114,7 +114,7 @@ export default function EmptyChatScreen() {
           </CardHeader>
 
           <CardContent>
-            Put a high-value quick personalization here.
+            {'[Put a high-value, quick personalization here]'}
           </CardContent>
 
           <CardFooter>
