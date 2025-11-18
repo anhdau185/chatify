@@ -1,11 +1,39 @@
-import { MoreVertical, Users } from 'lucide-react';
+import { MessageSquareX, MoreVertical, Users } from 'lucide-react';
 
 import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@components/ui/dropdown-menu';
 import { abbreviate } from '@shared/lib/utils';
 import { getRoomName } from '../lib/utils';
-import { useActiveRoom } from '../store/chatStore';
+import { useActiveRoom, useChatStore } from '../store/chatStore';
+
+function ConversationHeaderMenu() {
+  const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <MoreVertical className="h-5 w-5 text-slate-600" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuItem
+          onClick={() => setActiveRoomId(null)}
+          className="text-red-600 focus:text-red-600"
+        >
+          <MessageSquareX className="mr-0 h-4 w-4 text-red-600" />
+          <span>Close chat</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export default function ConversationHeader() {
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user is always non-nullable at this stage
@@ -35,9 +63,8 @@ export default function ConversationHeader() {
           <p className="text-xs text-green-500">Active now</p>
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="h-9 w-9">
-        <MoreVertical className="h-5 w-5 text-slate-600" />
-      </Button>
+
+      <ConversationHeaderMenu />
     </div>
   );
 }

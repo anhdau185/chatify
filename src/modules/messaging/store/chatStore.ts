@@ -13,7 +13,7 @@ type ChatState = {
 };
 
 type ChatActions = {
-  setActiveRoomId: (roomId: string) => void;
+  setActiveRoomId: (roomId: string | null) => void;
   setRooms: (roomsArr: ChatRoom[]) => void;
   upsertRoom: (room: ChatRoom) => void;
   replaceRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
