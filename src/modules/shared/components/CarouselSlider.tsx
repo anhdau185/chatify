@@ -1,5 +1,6 @@
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
 
+import { Button } from '@components/ui/button';
 import './CarouselSlider.css';
 
 export default function CarouselSlider({
@@ -9,7 +10,6 @@ export default function CarouselSlider({
 }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const itemCount = Children.count(children);
 
   const scrollToIndex = (index: number) => {
     if (carouselRef.current) {
@@ -22,11 +22,13 @@ export default function CarouselSlider({
   };
 
   const handlePrevious = () => {
+    const itemCount = Children.count(children);
     const newIndex = currentIndex === 0 ? itemCount - 1 : currentIndex - 1;
     scrollToIndex(newIndex);
   };
 
   const handleNext = () => {
+    const itemCount = Children.count(children);
     const newIndex = (currentIndex + 1) % itemCount;
     scrollToIndex(newIndex);
   };
@@ -43,7 +45,10 @@ export default function CarouselSlider({
     };
 
     carousel.addEventListener('scroll', updateCurrentIndex);
-    return () => carousel.removeEventListener('scroll', updateCurrentIndex);
+
+    return () => {
+      carousel.removeEventListener('scroll', updateCurrentIndex);
+    };
   }, []);
 
   return (
@@ -58,13 +63,13 @@ export default function CarouselSlider({
 
       {/* Navigation controls */}
       <div className="carousel-controls">
-        <button
+        <Button
           className="carousel-button carousel-button-prev"
           onClick={handlePrevious}
           aria-label="Previous slide"
         >
           Previous Tip
-        </button>
+        </Button>
 
         {/* Dot indicators */}
         <div className="carousel-dots">
@@ -78,13 +83,13 @@ export default function CarouselSlider({
           ))}
         </div>
 
-        <button
+        <Button
           className="carousel-button carousel-button-next"
           onClick={handleNext}
           aria-label="Next slide"
         >
           Next Tip
-        </button>
+        </Button>
       </div>
     </div>
   );
