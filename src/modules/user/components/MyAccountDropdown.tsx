@@ -21,9 +21,9 @@ export default function MyAccountDropdown() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 rounded-full transition-all hover:ring-2 hover:ring-blue-500/20"
+          className="h-10 w-10 rounded-full transition-all hover:ring-2 hover:ring-blue-500/20 active:scale-95"
         >
-          <Avatar className="h-10 w-10 cursor-pointer">
+          <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 font-semibold text-white">
               {user ? abbreviate(user.name) : 'ME'}
             </AvatarFallback>
