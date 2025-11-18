@@ -7,11 +7,11 @@ export default function SyncAlertBanner() {
   return (
     <Alert className="border-amber-200 bg-amber-50 text-amber-600">
       <AlertCircleIcon />
-      <AlertTitle>Action required</AlertTitle>
+      <AlertTitle>New device login</AlertTitle>
       <AlertDescription>
         <div className="space-y-2">
           <p className="text-amber-600">
-            Sync your messages to see the latest conversations.
+            Sync your messages to this device to see the latest conversations.
           </p>
           <div className="flex w-full items-center justify-end space-x-2">
             <Button
