@@ -20,7 +20,7 @@ export default function SyncAlertBanner() {
       <AlertDescription>
         <div className="space-y-2">
           <p className="text-amber-600">
-            Sync your data to this device to see the latest chats & messages.
+            Sync your data to this device to see latest chats & messages.
           </p>
           <div className="flex w-full items-center justify-end space-x-2">
             <Button

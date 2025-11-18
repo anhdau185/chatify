@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 .carousel-container {
   display: flex;
   flex-direction: column;
@@ -42,10 +44,19 @@
 }
 
 .carousel-button {
+  column-gap: 0.25rem;
+  user-select: none;
   transition:
     background-color 0.2s ease,
     transform 0.2s ease;
-  user-select: none;
+}
+
+.carousel-button.prev {
+  @apply bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700;
+}
+
+.carousel-button.next {
+  @apply bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600;
 }
 
 .carousel-button:active {
@@ -63,19 +74,13 @@
   padding: 0;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.5);
-  border: 2px solid #000000;
+  border-width: 2px;
+  border-style: solid;
+  @apply border-purple-700;
   cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
-}
-
-.carousel-dot:hover {
-  background-color: rgba(255, 255, 255, 0.7);
-  /* transform: scale(1.1); */
+  transition: background-color 0.3s ease;
 }
 
 .carousel-dot.active {
-  background-color: #000000;
-  /* transform: scale(1.2); */
+  @apply bg-purple-700;
 }

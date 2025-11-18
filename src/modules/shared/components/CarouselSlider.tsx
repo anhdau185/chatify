@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { Button } from '@components/ui/button';
@@ -64,11 +66,12 @@ export default function CarouselSlider({
       {/* Navigation controls */}
       <div className="carousel-controls">
         <Button
-          className="carousel-button carousel-button-prev"
+          className="carousel-button prev"
           onClick={handlePrevious}
           aria-label="Previous slide"
         >
-          Previous Tip
+          <ChevronLeft className="h-4 w-4" />
+          <span>Previous</span>
         </Button>
 
         {/* Dot indicators */}
@@ -76,7 +79,7 @@ export default function CarouselSlider({
           {Children.map(children, (_, i) => (
             <button
               key={i}
-              className={`carousel-dot ${i === currentIndex ? 'active' : ''}`}
+              className={clsx(['carousel-dot', i === currentIndex && 'active'])}
               onClick={() => scrollToIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
             />
@@ -84,11 +87,12 @@ export default function CarouselSlider({
         </div>
 
         <Button
-          className="carousel-button carousel-button-next"
+          className="carousel-button next"
           onClick={handleNext}
           aria-label="Next slide"
         >
-          Next Tip
+          <span>Next</span>
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
