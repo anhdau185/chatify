@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@components/ui/card';
 import { abbreviate } from '@shared/lib/utils';
+import { focusSearchInput } from '../lib/searchFocus';
 import { getDmChatPartner, getRoomName } from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 
@@ -117,7 +118,12 @@ export default function EmptyChatScreen() {
               <span className="text-slate-400">
                 {"Not who you're looking for? Use "}
               </span>
-              <span className="cursor-pointer text-blue-400">Search</span>
+              <span
+                className="cursor-pointer text-blue-400"
+                onClick={focusSearchInput}
+              >
+                Search
+              </span>
               <span className="text-slate-400">
                 {' to find your contacts.'}
               </span>

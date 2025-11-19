@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
 import { Search, Sidebar, Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
 import { MyAccountDropdown } from '@/modules/user';
@@ -13,6 +13,7 @@ import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
+import { useSearchFocus } from '../lib/searchFocus';
 import {
   getDmChatPartner,
   getRoomLatestActivity,
@@ -22,6 +23,9 @@ import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 import SyncAlertBanner from './SyncAlertBanner';
 
 export default function ChatSidebar() {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useSearchFocus(searchInputRef);
+
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
   const { refetch: fetchRoomsApi, isFetching } = useChatRoomsQuery(userId);
 
@@ -61,6 +65,7 @@ export default function ChatSidebar() {
         <div className="relative">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
+            ref={searchInputRef}
             placeholder="Search"
             className="border-slate-200 bg-slate-50 pl-10"
           />
