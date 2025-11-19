@@ -61,7 +61,7 @@ export default function ChatSidebar() {
         <div className="relative">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
-            placeholder="Find contacts..."
+            placeholder="Search"
             className="border-slate-200 bg-slate-50 pl-10"
           />
         </div>

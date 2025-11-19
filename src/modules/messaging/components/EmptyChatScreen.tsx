@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { noop } from 'lodash-es';
 import { Lightbulb, Settings, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -22,10 +23,12 @@ function ContactItem({
   name,
   avatar,
   onClickAvatar = noop,
+  isSelf = false,
 }: {
   name: string;
   avatar: ReactNode;
   onClickAvatar?: () => void;
+  isSelf?: boolean;
 }) {
   return (
     <div className="flex flex-col items-center space-y-2">
@@ -36,20 +39,34 @@ function ContactItem({
         onClick={onClickAvatar}
       >
         <Avatar className="h-12 w-12">
-          <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
+          <AvatarFallback
+            className={clsx([
+              'bg-gradient-to-br font-semibold text-white',
+              isSelf
+                ? 'from-emerald-400 to-cyan-500'
+                : 'from-blue-400 to-purple-500',
+            ])}
+          >
             {avatar}
           </AvatarFallback>
         </Avatar>
       </Button>
-      <span className="truncate text-xs font-semibold text-slate-700 select-none">
-        {name}
-      </span>
+      <div className="flex flex-col items-center">
+        <p className="truncate text-xs font-semibold text-slate-700 select-none">
+          {isSelf ? 'You' : name}
+        </p>
+        {isSelf && (
+          <p className="truncate text-xs font-semibold text-slate-700 select-none">
+            (Notetaking)
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function EmptyChatScreen() {
-  const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
+  const user = useAuthStore(state => state.authenticatedUser!); // user should always be non-nullable at this stage
   const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
   const rooms = useRecentChatRooms();
 
@@ -70,35 +87,40 @@ export default function EmptyChatScreen() {
           </CardHeader>
 
           <CardContent>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-5">
               {rooms.map(room => (
                 <ContactItem
                   key={room.id}
-                  name={getRoomName(room, userId)}
+                  name={getRoomName(room, user.id)}
                   avatar={
                     room.isGroup ? (
                       <Users />
                     ) : (
-                      abbreviate(getDmChatPartner(room, userId)!.name)
+                      abbreviate(getDmChatPartner(room, user.id)!.name)
                     )
                   }
                   onClickAvatar={() => setActiveRoomId(room.id)}
                 />
               ))}
 
-              <ContactItem key="placeholder1" name="Matt" avatar="MC" />
+              <ContactItem
+                key="room-0"
+                isSelf
+                name={user.name}
+                avatar={abbreviate(user.name)}
+              />
             </div>
           </CardContent>
 
           <CardFooter>
             <CardDescription className="w-full text-center text-xs">
               <span className="text-slate-400">
-                {
-                  'Showing your favorites only. You can see all your contacts in '
-                }
+                {"Not who you're looking for? Use "}
               </span>
-              <span className="cursor-pointer text-blue-400">Phonebook</span>
-              <span className="text-slate-400">.</span>
+              <span className="cursor-pointer text-blue-400">Search</span>
+              <span className="text-slate-400">
+                {' to find your contacts.'}
+              </span>
             </CardDescription>
           </CardFooter>
         </Card>
