@@ -1,37 +1,32 @@
 import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
-import { Search, Sidebar, Users } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { Sidebar, Users } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
 import { MyAccountDropdown } from '@/modules/user';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
-import { Input } from '@components/ui/input';
 import { Skeleton } from '@components/ui/skeleton';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
-import { useSearchFocus } from '../lib/searchFocus';
 import {
   getDmChatPartner,
   getRoomLatestActivity,
   getRoomName,
 } from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
+import SearchBar from './SearchBar';
 import SyncAlertBanner from './SyncAlertBanner';
 
 export default function ChatSidebar() {
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  useSearchFocus(searchInputRef);
-
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user should always be non-nullable at this stage
   const { refetch: fetchRoomsApi, isFetching } = useChatRoomsQuery(userId);
 
   const rooms = useRecentChatRooms();
   const setRooms = useChatStore(state => state.setRooms);
-
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
 
@@ -62,20 +57,13 @@ export default function ChatSidebar() {
           <MyAccountDropdown />
         </div>
 
-        <div className="relative">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            ref={searchInputRef}
-            placeholder="Search"
-            className="border-slate-200 bg-slate-50 pl-10"
-          />
-        </div>
+        <SearchBar />
       </div>
 
       {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
         {/* Alert Banners */}
-        <div className="p-2">
+        <div className="hidden p-2">
           <SyncAlertBanner />
         </div>
 

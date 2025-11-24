@@ -152,3 +152,25 @@
   );
   background-size: 200% 100%;
 }
+
+@layer components {
+  .search-container {
+    @apply relative transition-all duration-300;
+  }
+
+  .search-icon {
+    @apply absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 transition-all duration-300;
+  }
+
+  .search-icon.animate-search {
+    @apply scale-175 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)];
+  }
+
+  .search-container:focus-within .search-icon {
+    @apply text-purple-500;
+  }
+
+  .search-input {
+    @apply border-slate-200 bg-slate-50 !pl-10 focus:bg-white focus-visible:!border-purple-400 focus-visible:!ring-purple-400/35;
+  }
+}
