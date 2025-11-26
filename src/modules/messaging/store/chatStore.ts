@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import * as db from '../db';
+import { getIsSelfChat } from '../lib/utils';
 import type { ChatMessage, ChatRoom } from '../types';
 
 type ChatState = {
@@ -169,6 +170,16 @@ function useActiveRoom(): ChatRoom | null {
   return activeRoom ?? null;
 }
 
+function useIsActiveRoomSelf(userId: number): boolean {
+  const activeRoom = useActiveRoom();
+
+  if (!activeRoom) {
+    return false;
+  }
+
+  return getIsSelfChat(activeRoom, userId);
+}
+
 function useMessagesInActiveRoom(): ChatMessage[] {
   const activeRoomId = useChatStore(state => state.activeRoomId);
   const messagesByRoom = useChatStore(state => state.messagesByRoom);
@@ -200,6 +211,7 @@ useChatStore.subscribe(
 export {
   useChatStore,
   useActiveRoom,
+  useIsActiveRoomSelf,
   useMessagesInActiveRoom,
   useRecentChatRooms,
   useChatRoomIds,

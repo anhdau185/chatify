@@ -9,7 +9,11 @@ import { TooltipProvider } from '@components/ui/tooltip';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
 import * as db from '../db';
-import { useChatStore, useMessagesInActiveRoom } from '../store/chatStore';
+import {
+  useChatStore,
+  useIsActiveRoomSelf,
+  useMessagesInActiveRoom,
+} from '../store/chatStore';
 import { useMessageQueueStore } from '../store/messageQueueStore';
 import type { ChatMessage, WsMessageChat } from '../types';
 import PhotosGrid from './PhotosGrid';
@@ -24,6 +28,7 @@ export default function ConversationHistory() {
   const messages = useMessagesInActiveRoom();
   const updateMessage = useChatStore(state => state.updateMessage);
   const enqueue = useMessageQueueStore(state => state.enqueue);
+  const isSelfChat = useIsActiveRoomSelf(user.id);
 
   const scrollToBottom = () => {
     const element = conversationContainerRef.current;
@@ -147,9 +152,17 @@ export default function ConversationHistory() {
                     <div
                       className={clsx([
                         'rounded-2xl px-4 py-2',
-                        isOwnMsg
-                          ? 'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                          : 'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm',
+
+                        !isOwnMsg &&
+                          'rounded-bl-sm border border-slate-100 bg-white text-slate-800 shadow-sm',
+
+                        isOwnMsg &&
+                          isSelfChat &&
+                          'rounded-br-sm bg-gradient-to-r from-emerald-400 to-cyan-500 text-white',
+
+                        isOwnMsg &&
+                          !isSelfChat &&
+                          'rounded-br-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white',
                       ])}
                     >
                       <p className="text-sm leading-relaxed">{msg.content}</p>

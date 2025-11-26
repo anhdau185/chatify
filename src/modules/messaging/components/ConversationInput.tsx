@@ -10,7 +10,7 @@ import { useUploadMultiple } from '@/modules/media';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import * as db from '../db';
-import { useActiveRoom, useChatStore } from '../store/chatStore';
+import { useChatStore, useIsActiveRoomSelf } from '../store/chatStore';
 import { useMessageQueueStore } from '../store/messageQueueStore';
 import type { ChatMessage, WsMessageChat } from '../types';
 import PhotoThumbnail from './PhotoThumbnail';
@@ -26,13 +26,10 @@ export default function ConversationInput() {
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
+  const isSelfChat = useIsActiveRoomSelf(user.id);
 
   const outboxReady = useMessageQueueStore(state => state.outboxReady);
   const enqueue = useMessageQueueStore(state => state.enqueue);
-
-  const activeRoom = useActiveRoom()!; // activeRoom is always non-nullable at this stage
-  const isSelfChat =
-    activeRoom.members.length === 1 && activeRoom.members[0].id === user.id;
 
   useEffect(() => {
     if (activeRoomId && textInputRef.current) {

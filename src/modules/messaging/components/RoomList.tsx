@@ -14,6 +14,7 @@ import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
 import {
   getDmChatPartner,
+  getIsSelfChat,
   getRoomLatestActivity,
   getRoomName,
 } from '../lib/utils';
@@ -59,9 +60,7 @@ export default function RoomList() {
       {rooms.map(room => {
         const isOnline = true;
         const isRoomSelected = room.id === activeRoomId;
-        const isSelfChat =
-          room.members.length === 1 && room.members[0].id === userId;
-
+        const isSelfChat = getIsSelfChat(room, userId);
         return (
           <div
             key={room.id}

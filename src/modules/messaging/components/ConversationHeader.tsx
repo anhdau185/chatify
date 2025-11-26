@@ -13,7 +13,11 @@ import { SELF_CHAT_ROOM_NAME } from '@shared/constants';
 import { abbreviate } from '@shared/lib/utils';
 import myDocumentsAvatar from '@shared/static/images/myDocumentsAvatar.png';
 import { getRoomName } from '../lib/utils';
-import { useActiveRoom, useChatStore } from '../store/chatStore';
+import {
+  useActiveRoom,
+  useChatStore,
+  useIsActiveRoomSelf,
+} from '../store/chatStore';
 
 function ConversationHeaderMenu() {
   const setActiveRoomId = useChatStore(state => state.setActiveRoomId);
@@ -40,8 +44,7 @@ function ConversationHeaderMenu() {
 export default function ConversationHeader() {
   const userId = useAuthStore(state => state.authenticatedUser!.id); // user is always non-nullable at this stage
   const activeRoom = useActiveRoom()!; // activeRoom is always non-nullable at this stage
-  const isSelfChat =
-    activeRoom.members.length === 1 && activeRoom.members[0].id === userId;
+  const isSelfChat = useIsActiveRoomSelf(userId);
 
   return (
     <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">

@@ -1,5 +1,5 @@
 import { noop } from 'lodash-es';
-import { Lightbulb, Settings, Users } from 'lucide-react';
+import { Settings, Star, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
@@ -18,7 +18,7 @@ import {
 import { abbreviate } from '@shared/lib/utils';
 import myDocumentsAvatar from '@shared/static/images/myDocumentsAvatar.png';
 import { focusSearchInput } from '../lib/searchFocus';
-import { getDmChatPartner, getRoomName } from '../lib/utils';
+import { getDmChatPartner, getIsSelfChat, getRoomName } from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 
 function ContactItem({
@@ -71,7 +71,7 @@ export default function EmptyChatScreen() {
         <Card className="w-full max-w-sm border-0 shadow-xl">
           <CardHeader>
             <div className="flex items-center justify-center space-x-2">
-              <Lightbulb className="h-5 w-5" />
+              <Star className="h-5 w-5" />
               <CardTitle className="text-center font-bold">
                 Quick Chats
               </CardTitle>
@@ -84,8 +84,7 @@ export default function EmptyChatScreen() {
           <CardContent>
             <div className="flex justify-center gap-5">
               {rooms.slice(0, 3).map(room => {
-                const isSelfChat =
-                  room.members.length === 1 && room.members[0].id === user.id;
+                const isSelfChat = getIsSelfChat(room, user.id);
                 return (
                   <ContactItem
                     key={room.id}

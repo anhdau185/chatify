@@ -94,10 +94,15 @@ function getRoomName(room: ChatRoom, currentUserId: number) {
   return getDmChatPartner(room, currentUserId)?.name || 'Unknown User';
 }
 
+function getIsSelfChat(room: ChatRoom, userId: number): boolean {
+  return room.members.length === 1 && room.members[0].id === userId;
+}
+
 export {
   buildReactions,
   getRoomLatestActivity,
   getMessage,
   getDmChatPartner,
   getRoomName,
+  getIsSelfChat,
 };
