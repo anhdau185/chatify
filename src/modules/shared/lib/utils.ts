@@ -82,7 +82,7 @@ function deferMacro(task: () => void): number {
 /**
  * Runs callback on the next animation frame (before paint).
  */
-function deferToNextFrame(cb: () => void): number {
+function deferNextFrame(cb: () => void): number {
   return window.requestAnimationFrame(cb);
 }
 /**
@@ -106,6 +106,6 @@ export {
   delay,
   deferMicro,
   deferMacro,
-  deferToNextFrame,
+  deferNextFrame,
   deferPostPaint,
 };

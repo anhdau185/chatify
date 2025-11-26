@@ -16,7 +16,7 @@ export default function ChatSidebar() {
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <Sidebar className="text-slate-600" />
             </Button>
-            <h1 className="bg-gradient-to-r from-purple-500 via-emerald-400 to-cyan-500 bg-clip-text text-xl font-bold text-transparent">
+            <h1 className="bg-gradient-to-r from-purple-500 via-emerald-400 to-cyan-500 bg-clip-text text-xl font-bold text-transparent select-none">
               Chatify
             </h1>
           </div>
