@@ -7,7 +7,7 @@ import { useAuthStore } from '@/modules/auth';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { TooltipProvider } from '@components/ui/tooltip';
 import dayjs from '@shared/lib/dayjs';
-import { abbreviate } from '@shared/lib/utils';
+import { abbreviate, deferPostPaint } from '@shared/lib/utils';
 import * as db from '../db';
 import {
   useChatStore,
@@ -22,6 +22,7 @@ import Reactions from './Reactions';
 
 export default function ConversationHistory() {
   const conversationContainerRef = useRef<HTMLDivElement>(null);
+  const hasScrolledToBottomTimes = useRef(0);
   const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
   const replaceRoomMessages = useChatStore(state => state.replaceRoomMessages); // activeRoomId is always non-nullable at this stage
@@ -33,7 +34,11 @@ export default function ConversationHistory() {
   const scrollToBottom = () => {
     const element = conversationContainerRef.current;
     if (element) {
-      element.scrollTo({ top: element.scrollHeight });
+      element.scrollTo({
+        top: element.scrollHeight,
+        behavior: hasScrolledToBottomTimes.current === 0 ? 'auto' : 'smooth',
+      });
+      hasScrolledToBottomTimes.current += 1;
     }
   };
 
@@ -51,9 +56,11 @@ export default function ConversationHistory() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRoomId]); // only watch for activeRoomId changes to avoid unnecessary effect re-runs when messages change
 
-  // scroll to bottom when a new message gets added to the conversation
+  // scroll to bottom when enter room or new message got added to the conversation
   useEffect(() => {
-    if (messages.length > 0) scrollToBottom();
+    if (messages.length > 0) {
+      deferPostPaint(scrollToBottom); // ensure latest message list's already rendered to DOM before scrolling
+    }
   }, [messages.length]);
 
   return (
