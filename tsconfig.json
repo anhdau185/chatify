@@ -20,6 +20,6 @@
       "@shared/*": ["src/modules/shared/*"]
     }
   },
-  "include": ["src/*", "src/modules/App.tsx"],
+  "include": ["src/**/*", "src/modules/App.tsx"],
   "exclude": ["node_modules"]
 }
