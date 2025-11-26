@@ -9,6 +9,7 @@ import { Skeleton } from '@components/ui/skeleton';
 import { SELF_CHAT_ROOM_NAME } from '@shared/constants';
 import dayjs from '@shared/lib/dayjs';
 import { abbreviate } from '@shared/lib/utils';
+import myDocumentsAvatar from '@shared/static/images/myDocumentsAvatar.png';
 import { useChatRoomsQuery } from '../api/queries';
 import * as db from '../db';
 import {
@@ -77,10 +78,7 @@ export default function RoomList() {
                 {(function () {
                   if (isSelfChat) {
                     return (
-                      <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="@shadcn"
-                      />
+                      <AvatarImage src={myDocumentsAvatar} alt="Self Avatar" />
                     );
                   }
 
@@ -118,6 +116,7 @@ export default function RoomList() {
                 {getRoomLatestActivity(
                   room.lastMsg,
                   room.lastMsg?.senderId === userId,
+                  isSelfChat,
                 )}
               </p>
             </div>

@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { isEmpty } from 'lodash-es';
 import { Image as ImageIcon, Loader2, Send, Smile, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -9,7 +10,7 @@ import { useUploadMultiple } from '@/modules/media';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import * as db from '../db';
-import { useChatStore } from '../store/chatStore';
+import { useActiveRoom, useChatStore } from '../store/chatStore';
 import { useMessageQueueStore } from '../store/messageQueueStore';
 import type { ChatMessage, WsMessageChat } from '../types';
 import PhotoThumbnail from './PhotoThumbnail';
@@ -19,14 +20,19 @@ export default function ConversationInput() {
   const textInputRef = useRef<HTMLInputElement>(null);
   const [inputMsg, setInputMsg] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const { mutateAsync: uploadMultiple } = useUploadMultiple();
 
   const user = useAuthStore(state => state.authenticatedUser!); // user is always non-nullable at this stage
   const addMessage = useChatStore(state => state.addMessage);
   const updateMessage = useChatStore(state => state.updateMessage);
   const activeRoomId = useChatStore(state => state.activeRoomId!); // activeRoomId is always non-nullable at this stage
+
   const outboxReady = useMessageQueueStore(state => state.outboxReady);
   const enqueue = useMessageQueueStore(state => state.enqueue);
-  const { mutateAsync: uploadMultiple } = useUploadMultiple();
+
+  const activeRoom = useActiveRoom()!; // activeRoom is always non-nullable at this stage
+  const isSelfChat =
+    activeRoom.members.length === 1 && activeRoom.members[0].id === user.id;
 
   useEffect(() => {
     if (activeRoomId && textInputRef.current) {
@@ -209,7 +215,9 @@ export default function ConversationInput() {
                 handleSend();
               }
             }}
-            placeholder="Type a message..."
+            placeholder={
+              isSelfChat ? 'Jot something down...' : 'Type a message...'
+            }
             className="rounded-xl border-slate-200 bg-slate-50 py-6 pr-12 focus:bg-white"
           />
           <Button
@@ -225,7 +233,12 @@ export default function ConversationInput() {
         <Button
           onClick={handleSend}
           disabled={!outboxReady}
-          className="h-12 w-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-purple-700"
+          className={clsx([
+            'h-12 w-12 rounded-xl bg-gradient-to-r',
+            isSelfChat
+              ? 'from-emerald-400 to-cyan-500 shadow-lg shadow-green-500/25 hover:from-emerald-500 hover:to-cyan-600'
+              : 'from-blue-500 to-purple-600 shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-purple-700',
+          ])}
         >
           {outboxReady ? (
             <Send className="h-5 w-5" />

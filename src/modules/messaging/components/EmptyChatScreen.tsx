@@ -1,11 +1,11 @@
-import clsx from 'clsx';
 import { noop } from 'lodash-es';
 import { Lightbulb, Settings, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
+import { SELF_CHAT_ROOM_NAME } from '@/modules/shared/constants';
 import CarouselSlider from '@components/CarouselSlider';
-import { Avatar, AvatarFallback } from '@components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import {
   Card,
@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@components/ui/card';
 import { abbreviate } from '@shared/lib/utils';
+import myDocumentsAvatar from '@shared/static/images/myDocumentsAvatar.png';
 import { focusSearchInput } from '../lib/searchFocus';
 import { getDmChatPartner, getRoomName } from '../lib/utils';
 import { useChatStore, useRecentChatRooms } from '../store/chatStore';
@@ -23,42 +24,35 @@ import { useChatStore, useRecentChatRooms } from '../store/chatStore';
 function ContactItem({
   name,
   avatar,
-  onClickAvatar = noop,
-  isSelf = false,
+  onClick = noop,
+  isSelfChat = false,
 }: {
   name: string;
   avatar: ReactNode;
-  onClickAvatar?: () => void;
-  isSelf?: boolean;
+  onClick?: () => void;
+  isSelfChat?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center space-y-2">
+    <div className="flex flex-col items-center space-y-3">
       <Button
         variant="ghost"
         size="icon"
         className="h-12 w-12 rounded-full transition-all hover:ring-2 hover:ring-blue-500/20 active:scale-95"
-        onClick={onClickAvatar}
+        onClick={onClick}
       >
-        <Avatar className="h-12 w-12">
-          <AvatarFallback
-            className={clsx([
-              'bg-gradient-to-br font-semibold text-white',
-              isSelf
-                ? 'from-emerald-400 to-cyan-500'
-                : 'from-blue-400 to-purple-500',
-            ])}
-          >
-            {avatar}
-          </AvatarFallback>
-        </Avatar>
+        <Avatar className="h-12 w-12">{avatar}</Avatar>
       </Button>
-      <div className="flex flex-col items-center">
+
+      <div
+        className="flex cursor-pointer flex-col items-center"
+        onClick={onClick}
+      >
         <p className="truncate text-xs font-semibold text-slate-700 select-none">
-          {isSelf ? 'You' : name}
+          {isSelfChat ? SELF_CHAT_ROOM_NAME : name}
         </p>
-        {isSelf && (
+        {isSelfChat && (
           <p className="truncate text-xs font-semibold text-slate-700 select-none">
-            (Notetaking)
+            (Take a note)
           </p>
         )}
       </div>
@@ -82,34 +76,53 @@ export default function EmptyChatScreen() {
                 Quick Chats
               </CardTitle>
             </div>
-            <CardDescription className="w-full text-center text-slate-500">
+            {/* <CardDescription className="w-full text-center text-slate-500">
               Click on an avatar to start chatting:
-            </CardDescription>
+            </CardDescription> */}
           </CardHeader>
 
           <CardContent>
             <div className="flex justify-center gap-5">
-              {rooms.map(room => (
-                <ContactItem
-                  key={room.id}
-                  name={getRoomName(room, user.id)}
-                  avatar={
-                    room.isGroup ? (
-                      <Users />
-                    ) : (
-                      abbreviate(getDmChatPartner(room, user.id)!.name)
-                    )
-                  }
-                  onClickAvatar={() => setActiveRoomId(room.id)}
-                />
-              ))}
+              {rooms.slice(0, 3).map(room => {
+                const isSelfChat =
+                  room.members.length === 1 && room.members[0].id === user.id;
+                return (
+                  <ContactItem
+                    key={room.id}
+                    onClick={() => setActiveRoomId(room.id)}
+                    isSelfChat={isSelfChat}
+                    name={
+                      isSelfChat
+                        ? SELF_CHAT_ROOM_NAME
+                        : getRoomName(room, user.id)
+                    }
+                    avatar={(function () {
+                      if (isSelfChat) {
+                        return (
+                          <AvatarImage
+                            src={myDocumentsAvatar}
+                            alt="Self Avatar"
+                          />
+                        );
+                      }
 
-              <ContactItem
-                key="room-0"
-                isSelf
-                name={user.name}
-                avatar={abbreviate(user.name)}
-              />
+                      if (room.isGroup) {
+                        return (
+                          <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
+                            <Users />
+                          </AvatarFallback>
+                        );
+                      }
+
+                      return (
+                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 font-semibold text-white">
+                          {abbreviate(getDmChatPartner(room, user.id)!.name)}
+                        </AvatarFallback>
+                      );
+                    })()}
+                  />
+                );
+              })}
             </div>
           </CardContent>
 
@@ -124,9 +137,9 @@ export default function EmptyChatScreen() {
               >
                 Search
               </span>
-              <span className="text-slate-400">{' at the '}</span>
-              <span className="text-slate-400 underline">top left corner</span>
-              <span className="text-slate-400">{' to find your friends.'}</span>
+              <span className="text-slate-400">
+                {' (top-left corner) to find your friends.'}
+              </span>
             </CardDescription>
           </CardFooter>
         </Card>

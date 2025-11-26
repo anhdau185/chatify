@@ -43,9 +43,10 @@ function buildReactions(
 function getRoomLatestActivity(
   lastMsg: ChatMessage | undefined,
   isOwnMsg: boolean,
+  isSelfChat: boolean,
 ) {
   if (!lastMsg) {
-    return 'No messages yet';
+    return isSelfChat ? 'No notes yet' : 'No messages yet';
   }
 
   if (lastMsg.content) {
