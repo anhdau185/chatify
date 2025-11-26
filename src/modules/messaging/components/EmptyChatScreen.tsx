@@ -3,8 +3,6 @@ import { Settings, Star, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useAuthStore } from '@/modules/auth';
-import { SELF_CHAT_ROOM_NAME } from '@/modules/shared/constants';
-import CarouselSlider from '@components/CarouselSlider';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import { Button } from '@components/ui/button';
 import {
@@ -15,6 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@components/ui/card';
+import CarouselSlider from '@shared/components/CarouselSlider';
+import { SELF_CHAT_ROOM_NAME } from '@shared/constants';
 import { abbreviate } from '@shared/lib/utils';
 import myDocumentsAvatar from '@shared/static/images/myDocumentsAvatar.png';
 import { focusSearchInput } from '../lib/searchFocus';
