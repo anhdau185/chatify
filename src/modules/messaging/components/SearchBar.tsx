@@ -7,7 +7,7 @@ import { useSearchFocus } from '../lib/searchFocus';
 
 const DEFAULT_PLACEHOLDER = 'Search';
 const FOCUSED_PLACEHOLDER = 'Type a name that comes to mind...';
-const CHAR_DELAY_MS = 30; // ms per character
+const CHAR_DELAY_MS = 40; // ms per character
 const ICON_ANIM_DURATION_MS = 400;
 
 export default function SearchBar() {

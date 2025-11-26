@@ -138,7 +138,7 @@ export default function EmptyChatScreen() {
                 Search
               </span>
               <span className="text-slate-400">
-                {' (top-left corner) to find your friends.'}
+                {' (at top left corner) to find your friends.'}
               </span>
             </CardDescription>
           </CardFooter>
