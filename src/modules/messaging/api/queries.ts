@@ -13,12 +13,9 @@ function useChatRoomsQuery(userId: number) {
   const query = useQuery({
     queryKey: ['messaging/rooms', userId],
     queryFn: async () => {
-      const res = await fetch(
-        endpoint('/messaging/rooms', {
-          queryParams: { userId: userId.toString() },
-        }),
-        { credentials: 'include' },
-      );
+      const res = await fetch(endpoint('/messaging/rooms'), {
+        credentials: 'include',
+      });
 
       if (!res.ok) {
         const { error: errorMsg } =
