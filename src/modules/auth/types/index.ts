@@ -23,8 +23,10 @@ interface LoginCredentials {
 
 interface LoginResponse {
   success: boolean;
-  access: string;
-  authenticatedUser: PublicUser;
+  data: {
+    access: string;
+    authenticatedUser: PublicUser;
+  };
 }
 
 interface AuthResponse extends LoginResponse {}

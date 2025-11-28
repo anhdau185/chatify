@@ -33,7 +33,7 @@ function useLogin() {
       toast.error(message);
     },
 
-    onSuccess({ access, authenticatedUser }) {
+    onSuccess({ data: { access, authenticatedUser } }) {
       // save token & user to store after successful login
       setAuth({ access, authenticatedUser });
       toast.success(`Welcome back, ${authenticatedUser.name}! 🚀`);

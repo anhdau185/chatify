@@ -33,8 +33,8 @@ function useAuthentication() {
   useEffect(() => {
     if (query.isSuccess && !isEmpty(query.data)) {
       setAuth({
-        access: query.data.access,
-        authenticatedUser: query.data.authenticatedUser,
+        access: query.data.data.access,
+        authenticatedUser: query.data.data.authenticatedUser,
       });
     }
   }, [query.isSuccess, query.data]);
